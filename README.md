@@ -87,15 +87,16 @@ Priorização por MoSCoW.
 
 ### Criação de ticket
 
-| Campo | Tipo |
+| Entidade | Campos |
 |---|---|
-| Título do ticket | Texto corrido |
-| Nome do usuário | Coletado via SSO |
-| ID do acesso remoto | Texto corrido |
-| Descrição | Texto corrido + imagem |
-| Tipo de problema | Dropdown: Problemas com periférico (teclado, mouse, monitor, headphone), Computador não liga, Computador sem som, Internet com problema |
-| Marca do computador | Dropdown: Dell, HP, Positivo, Asus, Lenovo |
-| Possui monitor? | Dropdown: Sim, Não |
+| **User** | User ID (PK), Foto de perfil, Email, CPF, Senha, Nome, Sobrenome, Departamento, Telefone, Ticket ID (FK) |
+| **Gerente** | Gerente ID (PK), CPF, Foto de perfil, Email, Senha, Filtro salvo, Nome, Sobrenome, Time ID (FK) |
+| **Time** | Time ID (PK), Nome, Gerente ID (FK), Analista ID (FK) |
+| **Analista** | Analista ID (PK), Foto de perfil, Email, Senha, Filtro salvo, Nome, Sobrenome, Time ID (FK), Ticket ID (FK) |
+| **Ticket** | Ticket ID (PK), Chat criado, Título, Tipo do problema, Anexo, Descrição, Marca do computador, Possui monitor, Nível de criticidade, Status, Created At, Comentários, Log ID (FK), Analista ID (FK), Chat ID (FK), User ID (FK) |
+| **Chat** | Chat ID (PK), Created At, Membros, Ticket ID (FK), Mensagem ID (FK) |
+| **Mensagens** | Mensagem ID (PK), Conteúdo, Created At, Remetente, Chat ID (FK) |
+| **Logs** | Log ID (PK), Ação, Created At, Responsável pela ação, Ticket ID (FK) |
 
 ### Filtros e buscas
 
