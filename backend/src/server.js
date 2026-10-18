@@ -9,7 +9,7 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware.js");
 */
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT;
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -17,7 +17,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: `${process.env.CORS_ORIGIN_URL}`,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
