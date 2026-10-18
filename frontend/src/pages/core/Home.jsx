@@ -12,6 +12,9 @@ const Home = () => {
       <button>
         <Link to={"/forgotpsw"}>ForgotPsw</Link>
       </button>
+      <button>
+        <Link to={"/create_ticket"}>Create Ticket</Link>
+      </button>
     </div>
   );
 };
