@@ -16,4 +16,4 @@ const errorHandler = (error, req, res, next) => {
     .json({ message: error.message || "An unknown error occured" });
 };
 
-module.exports = { notFound, errorHandler };
+export default { notFound, errorHandler };
