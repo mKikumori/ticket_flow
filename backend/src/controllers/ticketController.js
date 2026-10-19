@@ -1,6 +1,8 @@
 import HttpError from "../model/errorModel.js";
 import Ticket from "../model/ticketModel.js";
 
+// POST to create new ticket
+// api/ticket/createTicket
 export async function createTicket(req, res, next) {
   try {
     console.log("Authenticated user:", req.user);

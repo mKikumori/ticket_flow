@@ -4,6 +4,6 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, createTicket);
+router.post("/createTicket", authMiddleware, createTicket);
 
 export default router;
