@@ -62,6 +62,11 @@ const ticketSchema = new mongoose.Schema(
           ref: "Analyst",
           required: true,
         },
+        /*manager_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Manager",
+          default: null,
+        },*/
         conteudo: {
           type: String,
           required: true,

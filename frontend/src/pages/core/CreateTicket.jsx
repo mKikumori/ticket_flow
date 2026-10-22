@@ -37,7 +37,7 @@ const CreateTicket = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:5001/api/ticket",
+        "http://localhost:5001/api/ticket/createTicket",
         ticketData,
         {
           headers: {

@@ -31,6 +31,7 @@ export async function registerUser(req, res, next) {
     }
 
     // psw strength logic
+    // exep: MySecurePassword123!
     if (psw.length < 6) {
       return next(
         new HttpError("Password must have at least 12 characters", 422),
@@ -113,6 +114,7 @@ export async function registerAnalyst(req, res, next) {
     }
 
     // psw strength logic
+    // exep: MySecurePassword123!
     if (psw.length < 6) {
       return next(
         new HttpError("Password must have at least 12 characters", 422),
@@ -181,32 +183,51 @@ export async function loginUser(req, res, next) {
 
     const newEmail = email.toLowerCase();
     const user = await User.findOne({ email: newEmail });
+    const analyst = await Analyst.findOne({ email: newEmail });
 
-    if (!user) {
+    if (!user && !analyst) {
       return next(new HttpError("Invalid credantions", 422));
     }
 
-    const comparePsw = await bcrypt.compare(psw, user.psw);
-    if (!comparePsw) {
-      return next(new HttpError("Invalid credantions", 422));
+    if (user) {
+      const comparePsw = await bcrypt.compare(psw, user.psw);
+      if (!comparePsw) {
+        return next(new HttpError("Invalid credantions", 422));
+      }
+
+      // login expire eta
+      const { _id: id, name } = user;
+      const token = jwt.sign({ id, name }, process.env.TOKEN, {
+        expiresIn: "1d",
+      });
+
+      res.status(200).json({ token, id, name });
     }
 
-    // login expire eta
-    const { _id: id, name } = user;
-    const token = jwt.sign({ id, name }, process.env.TOKEN, {
-      expiresIn: "1d",
-    });
+    if (analyst) {
+      console.log("ANALYST: ", analyst);
+      const comparePsw = await bcrypt.compare(psw, analyst.psw);
+      if (!comparePsw) {
+        return next(new HttpError("Invalid credantions", 422));
+      }
 
-    res.status(200).json({ token, id, name });
+      // login expire eta
+      const { _id: id, name } = analyst;
+      const token = jwt.sign({ id, name }, process.env.TOKEN, {
+        expiresIn: "1d",
+      });
+
+      res.status(200).json({ token, id, name });
+    }
   } catch (error) {
-    console.error("User Login error:", error);
+    console.error("Login error:", error);
 
-    return next(new HttpError("User Login failed", 422));
+    return next(new HttpError("Login failed", 422));
   }
 }
 
 // POST /api/auth/login_analyst
-export async function loginAnalyst(req, res, next) {
+/*export async function loginAnalyst(req, res, next) {
   try {
     const { email, psw } = req.body;
     if (!email || !psw) {
@@ -227,7 +248,7 @@ export async function loginAnalyst(req, res, next) {
 
     // login expire eta
     const { _id: id, name } = analyst;
-    const token = jwt.sign({ id, name }, `${TOKEN}`, {
+    const token = jwt.sign({ id, name }, process.env.TOKEN, {
       expiresIn: "1d",
     });
 
@@ -237,7 +258,7 @@ export async function loginAnalyst(req, res, next) {
 
     return next(new HttpError("Analyst Login failed", 422));
   }
-}
+}*/
 
 // POST /api/auth/logout
 export async function logout(req, res, next) {

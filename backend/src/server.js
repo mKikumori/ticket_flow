@@ -9,7 +9,6 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware.js");
 */
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT;
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,8 +27,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/ticket", ticketRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server initiated on PORT: ${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server initiated on PORT: ${process.env.PORT}`);
 });
 /*
 

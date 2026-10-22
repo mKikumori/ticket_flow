@@ -27,7 +27,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/auth/login",
+        `http://localhost:5001/api/auth/login`,
         userData,
       );
 
@@ -77,9 +77,9 @@ const Login = () => {
           required
         />
 
-        {error && <p className="error">{error}</p>}
+        {error && <p>{error}</p>}
 
-        <button type="submit" className="btn primary" disabled={loading}>
+        <button type="submit" disabled={loading}>
           {loading ? "Entrando..." : "Login"}
         </button>
       </form>
