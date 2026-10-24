@@ -1,8 +1,9 @@
-import { Schema, model } from "mongoose";
+import mongoose from "mongoose";
 
-const managerSchema = new mogoose.Schema({
+const managerSchema = new mongoose.Schema({
   profile_img: {
     type: String,
+    default: null,
   },
   email: {
     type: String,
@@ -10,6 +11,7 @@ const managerSchema = new mogoose.Schema({
   },
   cpf: {
     type: int,
+    required: true,
   },
   psw: {
     type: String,
@@ -24,7 +26,8 @@ const managerSchema = new mogoose.Schema({
     required: true,
   },
   filter: {
-    type: json,
+    type: Object,
+    default: null,
   },
 });
 
