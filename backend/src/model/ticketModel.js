@@ -43,7 +43,7 @@ const ticketSchema = new mongoose.Schema(
     },
     criticality: {
       type: String,
-      enum: ["Low", "Medium", "High", "Urgent", "Critical"],
+      enum: ["Low", "Medium", "High"],
       message: "{VALUE} is not supported",
       required: true,
       default: "Low",

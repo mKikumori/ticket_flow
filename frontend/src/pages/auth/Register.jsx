@@ -14,6 +14,7 @@ const Register = () => {
     name: "",
     last_name: "",
     phone: "",
+    psw2: "",
   });
 
   const [error, setError] = useState("");
@@ -85,6 +86,13 @@ const Register = () => {
           placeholder="Password"
           name="psw"
           value={userData.psw}
+          onChange={changeInputHandler}
+        />
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          name="psw2"
+          value={userData.psw2}
           onChange={changeInputHandler}
         />
         <input

@@ -4,9 +4,8 @@ import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
-/*
-const { notFound, errorHandler } = require("./middleware/errorMiddleware.js");
-*/
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+
 dotenv.config();
 const app = express();
 app.use(express.json({ extended: true }));
@@ -30,8 +29,5 @@ app.use("/api/ticket", ticketRoutes);
 app.listen(process.env.PORT, () => {
   console.log(`Server initiated on PORT: ${process.env.PORT}`);
 });
-/*
-
 app.use(notFound);
 app.use(errorHandler);
-*/

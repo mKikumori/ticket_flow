@@ -27,6 +27,16 @@ const userSchema = new mongoose.Schema({
   },
   department: {
     type: String,
+    enum: [
+      "Comercial",
+      "Marketing",
+      "Facilities",
+      "Engenharia",
+      "Financeiro",
+      "Fiscal",
+      "Legal",
+    ],
+    message: "{VALUE} is not supported",
     required: true,
   },
   phone: {

@@ -3,14 +3,47 @@ import User from "../model/userModel.js";
 import Analyst from "../model/analystModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 
 // POST to register new user
 // api/auth/register
 export async function registerUser(req, res, next) {
   try {
-    const { name, email, psw, cpf, department, phone, last_name, profile_img } =
-      req.body;
+    // Fields allowed in the request
+    const allowedFields = [
+      "profile_img",
+      "email",
+      "cpf",
+      "psw",
+      "name",
+      "last_name",
+      "department",
+      "phone",
+    ];
+
+    // Reject requests containing invalid fields
+    const receivedFields = Object.keys(req.body);
+
+    const invalidFields = receivedFields.filter(
+      (field) => !allowedFields.includes(field),
+    );
+
+    if (invalidFields.length > 0) {
+      return next(
+        new HttpError(`Invalid fields: ${invalidFields.join(", ")}`, 422),
+      );
+    }
+
+    const {
+      name,
+      email,
+      psw,
+      cpf,
+      department,
+      phone,
+      last_name,
+      profile_img,
+      psw2,
+    } = req.body;
     const newEmail = email.toLowerCase();
 
     if (
@@ -20,14 +53,51 @@ export async function registerUser(req, res, next) {
       !cpf ||
       !department ||
       !phone ||
-      !last_name
+      !last_name ||
+      !psw2
     ) {
       return next(new HttpError("Fill in all mandatory fields", 422));
+    }
+
+    const nameRegex = /^\p{L}+$/u;
+
+    if (!nameRegex.test(name.trim())) {
+      return next(new HttpError("Name must contain only letters", 422));
+    }
+
+    if (!nameRegex.test(last_name.trim())) {
+      return next(new HttpError("Last name must contain only letters", 422));
     }
 
     const emailExists = await User.findOne({ email: newEmail });
     if (emailExists) {
       return next(new HttpError("Email already exists", 422));
+    }
+
+    if (!newEmail.includes("@")) {
+      return next(new HttpError("Email must contain @", 422));
+    }
+
+    const cleanCPF = String(cpf);
+
+    if (!/^\d{1,11}$/.test(cleanCPF)) {
+      return next(
+        new HttpError(
+          "CPF must contain only numbers and at most 11 digits",
+          422,
+        ),
+      );
+    }
+
+    const cleanPhone = String(phone);
+
+    if (!/^\d{1,11}$/.test(cleanPhone)) {
+      return next(
+        new HttpError(
+          "Phone must contain only numbers and at most 11 digits",
+          422,
+        ),
+      );
     }
 
     // psw strength logic
@@ -66,25 +136,29 @@ export async function registerUser(req, res, next) {
       );
     }
 
+    if (psw != psw2) {
+      return next(new HttpError("Passwords do not match", 422));
+    }
+
     // psw, cpf and phone security logic
     // all must be of type String
     const psw_salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(psw, psw_salt);
 
     const cpf_salt = await bcrypt.genSalt(10);
-    const hashedCPF = await bcrypt.hash(cpf, cpf_salt);
+    const hashedCPF = await bcrypt.hash(String(cpf), cpf_salt);
 
     const phone_salt = await bcrypt.genSalt(10);
-    const hashedPhone = await bcrypt.hash(phone, phone_salt);
+    const hashedPhone = await bcrypt.hash(String(phone), phone_salt);
 
     const newUser = new User({
-      name,
+      name: name.trim(),
       email: newEmail,
       psw: hashedPassword,
       cpf: hashedCPF,
-      department,
+      department: department.trim(),
       phone: hashedPhone,
-      last_name,
+      last_name: last_name.trim(),
       profile_img,
     });
 
@@ -101,16 +175,54 @@ export async function registerUser(req, res, next) {
 // POST /api/auth/register_analyst
 export async function registerAnalyst(req, res, next) {
   try {
-    const { name, email, psw, last_name, profile_img, filter } = req.body;
+    // Fields allowed in the request
+    const allowedFields = [
+      "profile_img",
+      "email",
+      "psw",
+      "name",
+      "last_name",
+      "filter",
+      "team_id",
+    ];
+
+    // Reject requests containing invalid fields
+    const receivedFields = Object.keys(req.body);
+
+    const invalidFields = receivedFields.filter(
+      (field) => !allowedFields.includes(field),
+    );
+
+    if (invalidFields.length > 0) {
+      return next(
+        new HttpError(`Invalid fields: ${invalidFields.join(", ")}`, 422),
+      );
+    }
+
+    const { name, email, psw, last_name, profile_img, filter, psw2 } = req.body;
     const newEmail = email.toLowerCase();
 
-    if (!name || !email || !psw || !last_name) {
+    if (!name || !email || !psw || !last_name || !psw2) {
       return next(new HttpError("Fill in all mandatory fields", 422));
+    }
+
+    const nameRegex = /^\p{L}+$/u;
+
+    if (!nameRegex.test(name.trim())) {
+      return next(new HttpError("Name must contain only letters", 422));
+    }
+
+    if (!nameRegex.test(last_name.trim())) {
+      return next(new HttpError("Last name must contain only letters", 422));
     }
 
     const emailExists = await User.findOne({ email: newEmail });
     if (emailExists) {
       return next(new HttpError("Email already exists", 422));
+    }
+
+    if (!newEmail.includes("@")) {
+      return next(new HttpError("Email must contain @", 422));
     }
 
     // psw strength logic
@@ -147,6 +259,10 @@ export async function registerAnalyst(req, res, next) {
       return next(
         new HttpError("Password must contain a special character", 422),
       );
+    }
+
+    if (psw != psw2) {
+      return next(new HttpError("Passwords do not match", 422));
     }
 
     // psw security logic
