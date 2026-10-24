@@ -7,7 +7,7 @@ export async function createTicket(req, res, next) {
   try {
     console.log("Authenticated user:", req.user);
 
-    const { title, problem_type, description, criticality, status } = req.body;
+    const { title, problem_type, description } = req.body;
 
     if (!title || !problem_type || !description) {
       return next(new HttpError("Fill in all mandatory fields", 422));
@@ -17,9 +17,7 @@ export async function createTicket(req, res, next) {
       title,
       problem_type,
       description,
-      criticality,
-      status,
-      user_id: req.user.id,
+      user_id: req.user.id, // id do usuario logado no browser (localStorage)
       log_id: null,
       analyst_id: null,
       chat_id: null,

@@ -20,6 +20,7 @@ const Register = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // handle and save te user's input
   const changeInputHandler = (e) => {
     setUserData((prevState) => ({
       ...prevState,
@@ -27,6 +28,7 @@ const Register = () => {
     }));
   };
 
+  // funciton to register the user
   const registerUser = async (e) => {
     e.preventDefault();
     setError("");

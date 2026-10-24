@@ -13,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // handle and store the user's inputs
   const changeInputHandler = (e) => {
     setUserData((prevState) => ({
       ...prevState,
@@ -20,6 +21,7 @@ const Login = () => {
     }));
   };
 
+  // function to login the user
   const loginUser = async (e) => {
     e.preventDefault();
     setError("");
@@ -37,12 +39,13 @@ const Login = () => {
         throw new Error("O servidor não retornou um token de autenticação.");
       }
 
-      // Salva o JWT separadamente
+      // Salva o JWT no localStorage
       localStorage.setItem("token", token);
 
-      // Salva os dados básicos do usuário
+      // Salva os dados básicos do usuário em localStorage
       localStorage.setItem("user", JSON.stringify({ id, name }));
 
+      // retorne automaticamente para a pagina Home
       navigate("/");
     } catch (err) {
       setError(

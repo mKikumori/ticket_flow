@@ -59,6 +59,7 @@ export async function registerUser(req, res, next) {
       return next(new HttpError("Fill in all mandatory fields", 422));
     }
 
+    // Validar nome e sobrenome: apenas letras
     const nameRegex = /^\p{L}+$/u;
 
     if (!nameRegex.test(name.trim())) {
@@ -69,6 +70,7 @@ export async function registerUser(req, res, next) {
       return next(new HttpError("Last name must contain only letters", 422));
     }
 
+    // Validar se email ja existe e contem ""@""
     const emailExists = await User.findOne({ email: newEmail });
     if (emailExists) {
       return next(new HttpError("Email already exists", 422));
@@ -78,6 +80,7 @@ export async function registerUser(req, res, next) {
       return next(new HttpError("Email must contain @", 422));
     }
 
+    // Validar CPF: apenas números, máximo de 11 caracteres
     const cleanCPF = String(cpf);
 
     if (!/^\d{1,11}$/.test(cleanCPF)) {
@@ -89,6 +92,7 @@ export async function registerUser(req, res, next) {
       );
     }
 
+    // Validar Celular: apenas números, máximo de 11 caracteres
     const cleanPhone = String(phone);
 
     if (!/^\d{1,11}$/.test(cleanPhone)) {
@@ -101,7 +105,7 @@ export async function registerUser(req, res, next) {
     }
 
     // psw strength logic
-    // exep: MySecurePassword123!
+    // exemplo: MySecurePassword123!
     if (psw.length < 6) {
       return next(
         new HttpError("Password must have at least 12 characters", 422),
@@ -136,6 +140,7 @@ export async function registerUser(req, res, next) {
       );
     }
 
+    // Validar senha
     if (psw != psw2) {
       return next(new HttpError("Passwords do not match", 422));
     }
@@ -206,6 +211,7 @@ export async function registerAnalyst(req, res, next) {
       return next(new HttpError("Fill in all mandatory fields", 422));
     }
 
+    // Validar nome e sobrenome: apenas letras
     const nameRegex = /^\p{L}+$/u;
 
     if (!nameRegex.test(name.trim())) {
@@ -216,6 +222,7 @@ export async function registerAnalyst(req, res, next) {
       return next(new HttpError("Last name must contain only letters", 422));
     }
 
+    // Validar se email ja existe e contem ""@""
     const emailExists = await User.findOne({ email: newEmail });
     if (emailExists) {
       return next(new HttpError("Email already exists", 422));
@@ -261,6 +268,7 @@ export async function registerAnalyst(req, res, next) {
       );
     }
 
+    // Confirmar senha
     if (psw != psw2) {
       return next(new HttpError("Passwords do not match", 422));
     }
@@ -305,6 +313,8 @@ export async function loginUser(req, res, next) {
       return next(new HttpError("Invalid credantions", 422));
     }
 
+    // se o email for encontrado na tabela User
+    // faça o login de usuario
     if (user) {
       const comparePsw = await bcrypt.compare(psw, user.psw);
       if (!comparePsw) {
@@ -320,8 +330,9 @@ export async function loginUser(req, res, next) {
       res.status(200).json({ token, id, name });
     }
 
+    // se o email for encontrado na tabela Analyst
+    // faça o login de usuario
     if (analyst) {
-      console.log("ANALYST: ", analyst);
       const comparePsw = await bcrypt.compare(psw, analyst.psw);
       if (!comparePsw) {
         return next(new HttpError("Invalid credantions", 422));

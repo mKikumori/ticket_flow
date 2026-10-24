@@ -7,13 +7,12 @@ const CreateTicket = () => {
     title: "",
     problem_type: "",
     description: "",
-    criticality: "Low",
-    status: "Open",
   });
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // hanlde and save the user's input
   const changeInputHandler = (e) => {
     const { name, value } = e.target;
 
@@ -23,12 +22,14 @@ const CreateTicket = () => {
     }));
   };
 
+  // function to create the ticket
   const createTicket = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
     try {
+      // locate the token of the current logged in user
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -54,8 +55,6 @@ const CreateTicket = () => {
         title: "",
         problem_type: "",
         description: "",
-        criticality: "Low",
-        status: "Open",
         log_id: null,
         analyst_id: null,
         chat_id: null,
@@ -99,30 +98,6 @@ const CreateTicket = () => {
           onChange={changeInputHandler}
           required
         />
-
-        <select
-          name="criticality"
-          value={ticketData.criticality}
-          onChange={changeInputHandler}
-          required
-        >
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-          <option value="Urgent">Urgent</option>
-          <option value="Critical">Critical</option>
-        </select>
-
-        <select
-          name="status"
-          value={ticketData.status}
-          onChange={changeInputHandler}
-          required
-        >
-          <option value="Open">Open</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Closed">Closed</option>
-        </select>
 
         <button type="submit" className="btn primary">
           Create Ticket
