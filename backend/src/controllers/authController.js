@@ -19,6 +19,7 @@ export async function registerUser(req, res, next) {
       "cpf",
       "psw",
       "psw2",
+      "psw2",
       "name",
       "last_name",
       "department",
