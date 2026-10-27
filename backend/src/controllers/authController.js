@@ -3,6 +3,10 @@ import User from "../model/userModel.js";
 import Analyst from "../model/analystModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import {
+  encryptSensitiveData,
+  hashSensitiveData,
+} from "../utils/sensitiveData.js";
 
 // POST to register new user
 // api/auth/register
@@ -14,6 +18,7 @@ export async function registerUser(req, res, next) {
       "email",
       "cpf",
       "psw",
+      "psw2",
       "name",
       "last_name",
       "department",
@@ -44,8 +49,8 @@ export async function registerUser(req, res, next) {
       profile_img,
       psw2,
     } = req.body;
-    const newEmail = email.toLowerCase();
 
+    // Validate required fields
     if (
       !name ||
       !email ||
@@ -59,7 +64,7 @@ export async function registerUser(req, res, next) {
       return next(new HttpError("Fill in all mandatory fields", 422));
     }
 
-    // Validar nome e sobrenome: apenas letras
+    // Validate name and last name: letters only
     const nameRegex = /^\p{L}+$/u;
 
     if (!nameRegex.test(name.trim())) {
@@ -70,7 +75,8 @@ export async function registerUser(req, res, next) {
       return next(new HttpError("Last name must contain only letters", 422));
     }
 
-    // Validar se email ja existe e contem ""@""
+    // Validate email format
+    const newEmail = email.toLowerCase();
     const emailExists = await User.findOne({ email: newEmail });
     if (emailExists) {
       return next(new HttpError("Email already exists", 422));
@@ -80,33 +86,18 @@ export async function registerUser(req, res, next) {
       return next(new HttpError("Email must contain @", 422));
     }
 
-    // Validar CPF: apenas números, máximo de 11 caracteres
-    const cleanCPF = String(cpf);
-
-    if (!/^\d{1,11}$/.test(cleanCPF)) {
-      return next(
-        new HttpError(
-          "CPF must contain only numbers and at most 11 digits",
-          422,
-        ),
-      );
+    // Validate CPF: exactly 11 digits
+    if (typeof cpf !== "string" || !/^\d{11}$/.test(cpf)) {
+      return next(new HttpError("CPF must contain exactly 11 digits", 422));
     }
 
-    // Validar Celular: apenas números, máximo de 11 caracteres
-    const cleanPhone = String(phone);
-
-    if (!/^\d{1,11}$/.test(cleanPhone)) {
-      return next(
-        new HttpError(
-          "Phone must contain only numbers and at most 11 digits",
-          422,
-        ),
-      );
+    // Validate phone: exactly 11 digits
+    if (typeof phone !== "string" || !/^\d{11}$/.test(phone)) {
+      return next(new HttpError("Phone must contain exactly 11 digits", 422));
     }
 
-    // psw strength logic
-    // exemplo: MySecurePassword123!
-    if (psw.length < 6) {
+    // Validate password length
+    if (psw.length < 12) {
       return next(
         new HttpError("Password must have at least 12 characters", 422),
       );
@@ -118,6 +109,8 @@ export async function registerUser(req, res, next) {
       );
     }
 
+    // Validate password strength
+    // exemplo: MySecurePassword123!
     if (!/[a-z]/.test(psw)) {
       return next(
         new HttpError("Password must contain a lowercase letter", 422),
@@ -140,40 +133,81 @@ export async function registerUser(req, res, next) {
       );
     }
 
-    // Validar senha
-    if (psw != psw2) {
+    // Validate password confirmation
+    if (psw !== psw2) {
       return next(new HttpError("Passwords do not match", 422));
     }
 
-    // psw, cpf and phone security logic
-    // all must be of type String
-    const psw_salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(psw, psw_salt);
+    // Generate deterministic HMACs for duplicate detection
+    const cpfHash = hashSensitiveData(cpf);
+    const phoneHash = hashSensitiveData(phone);
 
-    const cpf_salt = await bcrypt.genSalt(10);
-    const hashedCPF = await bcrypt.hash(String(cpf), cpf_salt);
+    const existingSensitiveData = await User.findOne({
+      $or: [{ cpfHash }, { phoneHash }],
+    }).select("_id cpfHash phoneHash");
 
-    const phone_salt = await bcrypt.genSalt(10);
-    const hashedPhone = await bcrypt.hash(String(phone), phone_salt);
+    if (existingSensitiveData) {
+      if (existingSensitiveData.cpfHash === cpfHash) {
+        return next(new HttpError("CPF already exists", 409));
+      }
 
+      if (existingSensitiveData.phoneHash === phoneHash) {
+        return next(new HttpError("Phone already exists", 409));
+      }
+    }
+
+    // Encrypt CPF and phone using AES-256-GCM
+    const cpfEncrypted = encryptSensitiveData(cpf);
+    const phoneEncrypted = encryptSensitiveData(phone);
+
+    // Hash password using bcrypt
+    const hashedPassword = await bcrypt.hash(psw, 12);
+
+    // Create user with encrypted sensitive data and HMAC indexes
     const newUser = new User({
       name: name.trim(),
+      last_name: last_name.trim(),
       email: newEmail,
       psw: hashedPassword,
-      cpf: hashedCPF,
       department: department.trim(),
-      phone: hashedPhone,
-      last_name: last_name.trim(),
-      profile_img,
+      profile_img: profile_img || null,
+
+      cpf: cpfEncrypted,
+      cpfHash,
+
+      phone: phoneEncrypted,
+      phoneHash,
     });
 
     await newUser.save();
 
-    res.status(201).json(`New User ${newUser.email} registered!`);
+    return res.status(201).json({
+      message: "User registered successfully",
+      id: newUser._id,
+      email: newUser.email,
+    });
   } catch (error) {
     console.error("Registration error:", error);
 
-    return next(new HttpError("User registration failed", 422));
+    // MongoDB duplicate-key error (e.g. concurrent registrations)
+    if (error.code === 11000) {
+      const duplicatedField = Object.keys(error.keyPattern || {})[0];
+
+      const messages = {
+        email: "Email already exists",
+        cpfHash: "CPF already exists",
+        phoneHash: "Phone already exists",
+      };
+
+      return next(
+        new HttpError(
+          messages[duplicatedField] || "A unique field already exists",
+          409,
+        ),
+      );
+    }
+
+    return next(new HttpError("User registration failed", 500));
   }
 }
 

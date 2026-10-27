@@ -9,9 +9,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // CPF criptografado com AES-256-GCM
   cpf: {
     type: String,
     required: true,
+  },
+
+  // HMAC utilizado para verificar unicidade
+  cpfHash: {
+    type: String,
+    required: true,
+    unique: true,
   },
   psw: {
     type: String,
@@ -39,11 +47,28 @@ const userSchema = new mongoose.Schema({
     message: "{VALUE} is not supported",
     required: true,
   },
+  // Telefone criptografado com AES-256-GCM
   phone: {
     type: String,
-    required: true,
+    default: undefined,
+  },
+
+  // HMAC utilizado para verificar unicidade
+  phoneHash: {
+    type: String,
+    default: undefined,
   },
 });
+
+userSchema.index(
+  { phoneHash: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      phoneHash: { $type: "string" },
+    },
+  },
+);
 
 const User = mongoose.model("User", userSchema);
 
