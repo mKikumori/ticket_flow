@@ -14,6 +14,7 @@ export async function registerUser(req, res, next) {
       "email",
       "cpf",
       "psw",
+      "psw2",
       "name",
       "last_name",
       "department",
@@ -81,9 +82,8 @@ export async function registerUser(req, res, next) {
     }
 
     // Validar CPF: apenas números, máximo de 11 caracteres
-    const cleanCPF = String(cpf);
 
-    if (!/^\d{1,11}$/.test(cleanCPF)) {
+    if (!/^\d{11,11}$/.test(cpf)) {
       return next(
         new HttpError(
           "CPF must contain only numbers and at most 11 digits",
@@ -93,9 +93,8 @@ export async function registerUser(req, res, next) {
     }
 
     // Validar Celular: apenas números, máximo de 11 caracteres
-    const cleanPhone = String(phone);
 
-    if (!/^\d{1,11}$/.test(cleanPhone)) {
+    if (!/^\d{11,11}$/.test(phone)) {
       return next(
         new HttpError(
           "Phone must contain only numbers and at most 11 digits",
@@ -153,8 +152,20 @@ export async function registerUser(req, res, next) {
     const cpf_salt = await bcrypt.genSalt(10);
     const hashedCPF = await bcrypt.hash(String(cpf), cpf_salt);
 
+    const cpfExists1 = await User.findOne({ cpf: cpf });
+    console.log(cpfExists1)
+    const cpfExists = await bcrypt.compare(cpf, hashedCPF);
+      if (cpfExists) {
+        return next(new HttpError("CPF already exists", 422));
+      }
+
     const phone_salt = await bcrypt.genSalt(10);
     const hashedPhone = await bcrypt.hash(String(phone), phone_salt);
+
+    const phoneExists = await bcrypt.compare(phone, hashedPhone);
+      if (phoneExists) {
+        return next(new HttpError("Phone number already exists", 422));
+      }
 
     const newUser = new User({
       name: name.trim(),
