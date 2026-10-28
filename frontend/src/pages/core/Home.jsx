@@ -15,6 +15,9 @@ const Home = () => {
       <button>
         <Link to={"/create_ticket"}>Create Ticket</Link>
       </button>
+      <button>
+        <Link to={"/register_manager"}>Register Manager</Link>
+      </button>
     </div>
   );
 };

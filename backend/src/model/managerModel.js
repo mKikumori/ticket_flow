@@ -10,8 +10,14 @@ const managerSchema = new mongoose.Schema({
     required: true,
   },
   cpf: {
-    type: int,
+    type: String,
     required: true,
+  },
+  // HMAC utilizado para verificar unicidade
+  cpfHash: {
+    type: String,
+    required: true,
+    unique: true,
   },
   psw: {
     type: String,
@@ -27,6 +33,11 @@ const managerSchema = new mongoose.Schema({
   },
   filter: {
     type: Object,
+    default: null,
+  },
+  team_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Team",
     default: null,
   },
 });

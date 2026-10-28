@@ -1,6 +1,7 @@
 import HttpError from "../model/errorModel.js";
 import User from "../model/userModel.js";
 import Analyst from "../model/analystModel.js";
+import Manager from "../model/managerModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
@@ -329,6 +330,152 @@ export async function registerAnalyst(req, res, next) {
     console.error("Analyst Registration error:", error);
 
     return next(new HttpError("Analyst registration failed", 422));
+  }
+}
+
+// POST /api/auth/register_manager
+export async function registerManager(req, res, next) {
+  try {
+    // Fields allowed in the request
+    const allowedFields = [
+      "profile_img",
+      "email",
+      "cpf",
+      "psw",
+      "psw2",
+      "name",
+      "last_name",
+      "filter",
+      "team_id",
+    ];
+
+    // Reject requests containing invalid fields
+    const receivedFields = Object.keys(req.body);
+
+    const invalidFields = receivedFields.filter(
+      (field) => !allowedFields.includes(field),
+    );
+
+    if (invalidFields.length > 0) {
+      return next(
+        new HttpError(`Invalid fields: ${invalidFields.join(", ")}`, 422),
+      );
+    }
+
+    const { name, email, cpf, psw, last_name, profile_img, filter, psw2 } =
+      req.body;
+    const newEmail = email.toLowerCase();
+
+    if (!name || !email || !cpf || !psw || !last_name || !psw2) {
+      return next(new HttpError("Fill in all mandatory fields", 422));
+    }
+
+    // Validar nome e sobrenome: apenas letras
+    const nameRegex = /^\p{L}+$/u;
+
+    if (!nameRegex.test(name.trim())) {
+      return next(new HttpError("Name must contain only letters", 422));
+    }
+
+    if (!nameRegex.test(last_name.trim())) {
+      return next(new HttpError("Last name must contain only letters", 422));
+    }
+
+    // Validar se email ja existe e contem ""@""
+    const emailExists = await User.findOne({ email: newEmail });
+    if (emailExists) {
+      return next(new HttpError("Email already exists", 422));
+    }
+
+    if (!newEmail.includes("@")) {
+      return next(new HttpError("Email must contain @", 422));
+    }
+
+    // Validate CPF: exactly 11 digits
+    if (typeof cpf !== "string" || !/^\d{11}$/.test(cpf)) {
+      return next(new HttpError("CPF must contain exactly 11 digits", 422));
+    }
+
+    // psw strength logic
+    // exep: MySecurePassword123!
+    if (psw.length < 6) {
+      return next(
+        new HttpError("Password must have at least 12 characters", 422),
+      );
+    }
+
+    if (psw.length > 128) {
+      return next(
+        new HttpError("Password must have at most 128 characters", 422),
+      );
+    }
+
+    if (!/[a-z]/.test(psw)) {
+      return next(
+        new HttpError("Password must contain a lowercase letter", 422),
+      );
+    }
+
+    if (!/[A-Z]/.test(psw)) {
+      return next(
+        new HttpError("Password must contain an uppercase letter", 422),
+      );
+    }
+
+    if (!/[0-9]/.test(psw)) {
+      return next(new HttpError("Password must contain a number", 422));
+    }
+
+    if (!/[^a-zA-Z0-9]/.test(psw)) {
+      return next(
+        new HttpError("Password must contain a special character", 422),
+      );
+    }
+
+    // Confirmar senha
+    if (psw != psw2) {
+      return next(new HttpError("Passwords do not match", 422));
+    }
+
+    // Generate deterministic HMACs for duplicate detection
+    const cpfHash = hashSensitiveData(cpf);
+
+    const existingSensitiveData = await Manager.findOne({
+      cpf: cpfHash,
+    }).select("_id cpfHash");
+
+    if (existingSensitiveData) {
+      if (existingSensitiveData.cpfHash === cpfHash) {
+        return next(new HttpError("CPF already exists", 409));
+      }
+    }
+
+    // Encrypt CPF and phone using AES-256-GCM
+    const cpfEncrypted = encryptSensitiveData(cpf);
+
+    // psw security logic
+    // all must be of type String
+    const psw_salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(psw, psw_salt);
+
+    const newManager = new Manager({
+      name,
+      email: newEmail,
+      cpf: cpfEncrypted,
+      cpfHash,
+      psw: hashedPassword,
+      last_name,
+      profile_img,
+      filter,
+    });
+
+    await newManager.save();
+
+    res.status(201).json(`New Manager ${newManager.email} registered!`);
+  } catch (error) {
+    console.error("Manager Registration error:", error);
+
+    return next(new HttpError("Manager registration failed", 422));
   }
 }
 
