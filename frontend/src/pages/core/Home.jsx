@@ -18,6 +18,9 @@ const Home = () => {
       <button>
         <Link to={"/register_manager"}>Register Manager</Link>
       </button>
+      <button>
+        <Link to={"/register_analyst"}>Register Analyst</Link>
+      </button>
     </div>
   );
 };

@@ -5,6 +5,8 @@ import Login from "./pages/auth/Login";
 import ForgotPsw from "./pages/auth/ForgotPsw";
 import CreateTicket from "./pages/core/CreateTicket";
 import RegisterManager from "./pages/auth/RegisterManager";
+import RegisterAnalyst from "./pages/auth/RegisterAnalyst";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
   return (
@@ -16,6 +18,11 @@ const App = () => {
         <Route path="/forgotpsw" element={<ForgotPsw />} />
         <Route path="/create_ticket" element={<CreateTicket />} />
         <Route path="/register_manager" element={<RegisterManager />} />
+
+        {/* Manager-only routes */}
+        <Route element={<ProtectedRoute allowedRoles={["manager"]} />}>
+          <Route path="/register_analyst" element={<RegisterAnalyst />} />
+        </Route>
       </Routes>
     </div>
   );

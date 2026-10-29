@@ -1,9 +1,11 @@
 import { Link, useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
+import { UserContext } from "../../context/UserContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setCurrentUser } = useContext(UserContext);
 
   const [userData, setUserData] = useState({
     email: "",
@@ -44,6 +46,13 @@ const Login = () => {
 
       // Salva os dados básicos do usuário em localStorage
       localStorage.setItem("user", JSON.stringify({ id, name }));
+
+      setCurrentUser({
+        id: response.data.id,
+        name: response.data.name,
+        token: response.data.token,
+        role: response.data.role,
+      });
 
       // retorne automaticamente para a pagina Home
       navigate("/");

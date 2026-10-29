@@ -13,132 +13,11 @@ import {
 // api/auth/register
 export async function registerUser(req, res, next) {
   try {
-    // Fields allowed in the request
-    const allowedFields = [
-      "profile_img",
-      "email",
-      "cpf",
-      "psw",
-      "psw2",
-      "psw2",
-      "name",
-      "last_name",
-      "department",
-      "phone",
-    ];
+    const { name, email, psw, cpf, department, phone, last_name, profile_img } =
+      req.body;
+    const newEmail = email.trim().toLowerCase();
 
-    // Reject requests containing invalid fields
-    const receivedFields = Object.keys(req.body);
-
-    const invalidFields = receivedFields.filter(
-      (field) => !allowedFields.includes(field),
-    );
-
-    if (invalidFields.length > 0) {
-      return next(
-        new HttpError(`Invalid fields: ${invalidFields.join(", ")}`, 422),
-      );
-    }
-
-    const {
-      name,
-      email,
-      psw,
-      cpf,
-      department,
-      phone,
-      last_name,
-      profile_img,
-      psw2,
-    } = req.body;
-
-    // Validate required fields
-    if (
-      !name ||
-      !email ||
-      !psw ||
-      !cpf ||
-      !department ||
-      !phone ||
-      !last_name ||
-      !psw2
-    ) {
-      return next(new HttpError("Fill in all mandatory fields", 422));
-    }
-
-    // Validate name and last name: letters only
-    const nameRegex = /^\p{L}+$/u;
-
-    if (!nameRegex.test(name.trim())) {
-      return next(new HttpError("Name must contain only letters", 422));
-    }
-
-    if (!nameRegex.test(last_name.trim())) {
-      return next(new HttpError("Last name must contain only letters", 422));
-    }
-
-    // Validate email format
-    const newEmail = email.toLowerCase();
-    const emailExists = await User.findOne({ email: newEmail });
-    if (emailExists) {
-      return next(new HttpError("Email already exists", 422));
-    }
-
-    if (!newEmail.includes("@")) {
-      return next(new HttpError("Email must contain @", 422));
-    }
-
-    // Validate CPF: exactly 11 digits
-    if (typeof cpf !== "string" || !/^\d{11}$/.test(cpf)) {
-      return next(new HttpError("CPF must contain exactly 11 digits", 422));
-    }
-
-    // Validate phone: exactly 11 digits
-    if (typeof phone !== "string" || !/^\d{11}$/.test(phone)) {
-      return next(new HttpError("Phone must contain exactly 11 digits", 422));
-    }
-
-    // Validate password length
-    if (psw.length < 12) {
-      return next(
-        new HttpError("Password must have at least 12 characters", 422),
-      );
-    }
-
-    if (psw.length > 128) {
-      return next(
-        new HttpError("Password must have at most 128 characters", 422),
-      );
-    }
-
-    // Validate password strength
-    // exemplo: MySecurePassword123!
-    if (!/[a-z]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain a lowercase letter", 422),
-      );
-    }
-
-    if (!/[A-Z]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain an uppercase letter", 422),
-      );
-    }
-
-    if (!/[0-9]/.test(psw)) {
-      return next(new HttpError("Password must contain a number", 422));
-    }
-
-    if (!/[^a-zA-Z0-9]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain a special character", 422),
-      );
-    }
-
-    // Validate password confirmation
-    if (psw !== psw2) {
-      return next(new HttpError("Passwords do not match", 422));
-    }
+    // Validate registration data in validateRegisterUser middleware.
 
     // Generate deterministic HMACs for duplicate detection
     const cpfHash = hashSensitiveData(cpf);
@@ -165,7 +44,7 @@ export async function registerUser(req, res, next) {
     // Hash password using bcrypt
     const hashedPassword = await bcrypt.hash(psw, 12);
 
-    // Create user with encrypted sensitive data and HMAC indexes
+    // Create user
     const newUser = new User({
       name: name.trim(),
       last_name: last_name.trim(),
@@ -191,7 +70,7 @@ export async function registerUser(req, res, next) {
   } catch (error) {
     console.error("Registration error:", error);
 
-    // MongoDB duplicate-key error (e.g. concurrent registrations)
+    // Handle MongoDB duplicate-key errors
     if (error.code === 11000) {
       const duplicatedField = Object.keys(error.keyPattern || {})[0];
 
@@ -216,98 +95,10 @@ export async function registerUser(req, res, next) {
 // POST /api/auth/register_analyst
 export async function registerAnalyst(req, res, next) {
   try {
-    // Fields allowed in the request
-    const allowedFields = [
-      "profile_img",
-      "email",
-      "psw",
-      "name",
-      "last_name",
-      "filter",
-      "team_id",
-    ];
+    const { name, email, cpf, psw, psw2, last_name, profile_img } = req.body;
+    const newEmail = email.trim().toLowerCase();
 
-    // Reject requests containing invalid fields
-    const receivedFields = Object.keys(req.body);
-
-    const invalidFields = receivedFields.filter(
-      (field) => !allowedFields.includes(field),
-    );
-
-    if (invalidFields.length > 0) {
-      return next(
-        new HttpError(`Invalid fields: ${invalidFields.join(", ")}`, 422),
-      );
-    }
-
-    const { name, email, psw, last_name, profile_img, filter, psw2 } = req.body;
-    const newEmail = email.toLowerCase();
-
-    if (!name || !email || !psw || !last_name || !psw2) {
-      return next(new HttpError("Fill in all mandatory fields", 422));
-    }
-
-    // Validar nome e sobrenome: apenas letras
-    const nameRegex = /^\p{L}+$/u;
-
-    if (!nameRegex.test(name.trim())) {
-      return next(new HttpError("Name must contain only letters", 422));
-    }
-
-    if (!nameRegex.test(last_name.trim())) {
-      return next(new HttpError("Last name must contain only letters", 422));
-    }
-
-    // Validar se email ja existe e contem ""@""
-    const emailExists = await User.findOne({ email: newEmail });
-    if (emailExists) {
-      return next(new HttpError("Email already exists", 422));
-    }
-
-    if (!newEmail.includes("@")) {
-      return next(new HttpError("Email must contain @", 422));
-    }
-
-    // psw strength logic
-    // exep: MySecurePassword123!
-    if (psw.length < 6) {
-      return next(
-        new HttpError("Password must have at least 12 characters", 422),
-      );
-    }
-
-    if (psw.length > 128) {
-      return next(
-        new HttpError("Password must have at most 128 characters", 422),
-      );
-    }
-
-    if (!/[a-z]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain a lowercase letter", 422),
-      );
-    }
-
-    if (!/[A-Z]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain an uppercase letter", 422),
-      );
-    }
-
-    if (!/[0-9]/.test(psw)) {
-      return next(new HttpError("Password must contain a number", 422));
-    }
-
-    if (!/[^a-zA-Z0-9]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain a special character", 422),
-      );
-    }
-
-    // Confirmar senha
-    if (psw != psw2) {
-      return next(new HttpError("Passwords do not match", 422));
-    }
+    // Validate registration data in validateRegisterAnalyst middleware.
 
     // psw security logic
     // all must be of type String
@@ -320,7 +111,6 @@ export async function registerAnalyst(req, res, next) {
       psw: hashedPassword,
       last_name,
       profile_img,
-      filter,
     });
 
     await newAnalyst.save();
@@ -336,106 +126,20 @@ export async function registerAnalyst(req, res, next) {
 // POST /api/auth/register_manager
 export async function registerManager(req, res, next) {
   try {
-    // Fields allowed in the request
-    const allowedFields = [
-      "profile_img",
-      "email",
-      "cpf",
-      "psw",
-      "psw2",
-      "name",
-      "last_name",
-      "filter",
-      "team_id",
-    ];
+    const {
+      name,
+      email,
+      cpf,
+      psw,
+      last_name,
+      profile_img,
+      filter,
+      psw2,
+      team_id,
+    } = req.body;
+    const newEmail = email.trim().toLowerCase();
 
-    // Reject requests containing invalid fields
-    const receivedFields = Object.keys(req.body);
-
-    const invalidFields = receivedFields.filter(
-      (field) => !allowedFields.includes(field),
-    );
-
-    if (invalidFields.length > 0) {
-      return next(
-        new HttpError(`Invalid fields: ${invalidFields.join(", ")}`, 422),
-      );
-    }
-
-    const { name, email, cpf, psw, last_name, profile_img, filter, psw2 } =
-      req.body;
-    const newEmail = email.toLowerCase();
-
-    if (!name || !email || !cpf || !psw || !last_name || !psw2) {
-      return next(new HttpError("Fill in all mandatory fields", 422));
-    }
-
-    // Validar nome e sobrenome: apenas letras
-    const nameRegex = /^\p{L}+$/u;
-
-    if (!nameRegex.test(name.trim())) {
-      return next(new HttpError("Name must contain only letters", 422));
-    }
-
-    if (!nameRegex.test(last_name.trim())) {
-      return next(new HttpError("Last name must contain only letters", 422));
-    }
-
-    // Validar se email ja existe e contem ""@""
-    const emailExists = await User.findOne({ email: newEmail });
-    if (emailExists) {
-      return next(new HttpError("Email already exists", 422));
-    }
-
-    if (!newEmail.includes("@")) {
-      return next(new HttpError("Email must contain @", 422));
-    }
-
-    // Validate CPF: exactly 11 digits
-    if (typeof cpf !== "string" || !/^\d{11}$/.test(cpf)) {
-      return next(new HttpError("CPF must contain exactly 11 digits", 422));
-    }
-
-    // psw strength logic
-    // exep: MySecurePassword123!
-    if (psw.length < 6) {
-      return next(
-        new HttpError("Password must have at least 12 characters", 422),
-      );
-    }
-
-    if (psw.length > 128) {
-      return next(
-        new HttpError("Password must have at most 128 characters", 422),
-      );
-    }
-
-    if (!/[a-z]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain a lowercase letter", 422),
-      );
-    }
-
-    if (!/[A-Z]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain an uppercase letter", 422),
-      );
-    }
-
-    if (!/[0-9]/.test(psw)) {
-      return next(new HttpError("Password must contain a number", 422));
-    }
-
-    if (!/[^a-zA-Z0-9]/.test(psw)) {
-      return next(
-        new HttpError("Password must contain a special character", 422),
-      );
-    }
-
-    // Confirmar senha
-    if (psw != psw2) {
-      return next(new HttpError("Passwords do not match", 422));
-    }
+    // Validate registration data in validateRegisterManager middleware.
 
     // Generate deterministic HMACs for duplicate detection
     const cpfHash = hashSensitiveData(cpf);
@@ -467,6 +171,7 @@ export async function registerManager(req, res, next) {
       last_name,
       profile_img,
       filter,
+      team_id,
     });
 
     await newManager.save();
@@ -475,63 +180,100 @@ export async function registerManager(req, res, next) {
   } catch (error) {
     console.error("Manager Registration error:", error);
 
+    // MongoDB duplicate-key error (e.g. concurrent registrations)
+    if (error.code === 11000) {
+      const duplicatedField = Object.keys(error.keyPattern || {})[0];
+
+      const messages = {
+        email: "Email already exists",
+        cpfHash: "CPF already exists",
+      };
+
+      return next(
+        new HttpError(
+          messages[duplicatedField] || "A unique field already exists",
+          409,
+        ),
+      );
+    }
+
     return next(new HttpError("Manager registration failed", 422));
   }
 }
 
 // POST /api/auth/login
+
 export async function loginUser(req, res, next) {
   try {
     const { email, psw } = req.body;
-    if (!email || !psw) {
+
+    if (
+      typeof email !== "string" ||
+      !email.trim() ||
+      typeof psw !== "string" ||
+      !psw
+    ) {
       return next(new HttpError("Fill in all fields", 422));
     }
 
-    const newEmail = email.toLowerCase();
+    const newEmail = email.trim().toLowerCase();
+
     const user = await User.findOne({ email: newEmail });
     const analyst = await Analyst.findOne({ email: newEmail });
+    const manager = await Manager.findOne({ email: newEmail });
 
-    if (!user && !analyst) {
-      return next(new HttpError("Invalid credantions", 422));
+    if (!user && !analyst && !manager) {
+      return next(new HttpError("Invalid email or password", 401));
     }
 
-    // se o email for encontrado na tabela User
-    // faça o login de usuario
+    // Identify the account and its role
+    let account;
+    let role;
+
     if (user) {
-      const comparePsw = await bcrypt.compare(psw, user.psw);
-      if (!comparePsw) {
-        return next(new HttpError("Invalid credantions", 422));
-      }
-
-      // login expire eta
-      const { _id: id, name } = user;
-      const token = jwt.sign({ id, name }, process.env.TOKEN, {
-        expiresIn: "1d",
-      });
-
-      res.status(200).json({ token, id, name });
+      account = user;
+      role = "user";
+    } else if (analyst) {
+      account = analyst;
+      role = "analyst";
+    } else {
+      account = manager;
+      role = "manager";
     }
 
-    // se o email for encontrado na tabela Analyst
-    // faça o login de usuario
-    if (analyst) {
-      const comparePsw = await bcrypt.compare(psw, analyst.psw);
-      if (!comparePsw) {
-        return next(new HttpError("Invalid credantions", 422));
-      }
+    // Validate password
+    const comparePsw = await bcrypt.compare(psw, account.psw);
 
-      // login expire eta
-      const { _id: id, name } = analyst;
-      const token = jwt.sign({ id, name }, process.env.TOKEN, {
-        expiresIn: "1d",
-      });
-
-      res.status(200).json({ token, id, name });
+    if (!comparePsw) {
+      return next(new HttpError("Invalid email or password", 401));
     }
+
+    // Generate JWT with role
+    const id = account._id.toString();
+    const name = account.name;
+
+    const token = jwt.sign(
+      {
+        id,
+        name,
+        role,
+      },
+      process.env.TOKEN,
+      {
+        expiresIn: "1d",
+      },
+    );
+
+    return res.status(200).json({
+      token,
+      id,
+      name,
+      role,
+    });
   } catch (error) {
     console.error("Login error:", error);
 
-    return next(new HttpError("Login failed", 422));
+    return next(new HttpError("Login failed", 500));
   }
 }
 

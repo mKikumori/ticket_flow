@@ -121,7 +121,7 @@ const Register = () => {
         {error && <p>{error}</p>}
 
         <button type="submit" disabled={loading}>
-          {loading ? "Entrando..." : "Registrar"}
+          {loading ? "Registrando..." : "Registrar"}
         </button>
       </form>
       <div>
