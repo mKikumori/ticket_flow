@@ -88,7 +88,9 @@ export async function registerUser(req, res, next) {
       );
     }
 
-    return next(new HttpError("User registration failed", 500));
+    return next(
+      new HttpError(`User registration failed: ${error.message}`, 422),
+    );
   }
 }
 
@@ -119,7 +121,9 @@ export async function registerAnalyst(req, res, next) {
   } catch (error) {
     console.error("Analyst Registration error:", error);
 
-    return next(new HttpError("Analyst registration failed", 422));
+    return next(
+      new HttpError(`Analyst registration failed: ${error.message}`, 422),
+    );
   }
 }
 
@@ -197,7 +201,9 @@ export async function registerManager(req, res, next) {
       );
     }
 
-    return next(new HttpError("Manager registration failed", 422));
+    return next(
+      new HttpError(`Manager registration failed: ${error.message}`, 422),
+    );
   }
 }
 
@@ -273,7 +279,7 @@ export async function loginUser(req, res, next) {
   } catch (error) {
     console.error("Login error:", error);
 
-    return next(new HttpError("Login failed", 500));
+    return next(new HttpError(`Login failed: ${error.message}`, 422));
   }
 }
 
@@ -318,6 +324,6 @@ export async function logout(req, res, next) {
       message: "Logout successful",
     });
   } catch (error) {
-    return next(new HttpError("Logout failed", 500));
+    return next(new HttpError(`Logout failed: ${error.message}`, 422));
   }
 }
