@@ -8,7 +8,6 @@ const RegisterAnalyst = () => {
   const [userData, setUserData] = useState({
     email: "",
     psw: "",
-    profile_img: "",
     name: "",
     last_name: "",
     psw2: "",

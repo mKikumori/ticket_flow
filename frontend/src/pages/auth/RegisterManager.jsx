@@ -9,7 +9,6 @@ const RegisterManager = () => {
     email: "",
     psw: "",
     cpf: "",
-    profile_img: "",
     name: "",
     last_name: "",
     psw2: "",

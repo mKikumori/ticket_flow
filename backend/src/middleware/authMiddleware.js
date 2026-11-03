@@ -55,6 +55,32 @@ export function authorizeRoles(...roles) {
 // middleware para verificar as informações do usuário ao registrar
 export async function validateRegisterUser(req, res, next) {
   try {
+
+    // Fields allowed in the request
+    const allowedFields = [
+      "email",
+      "cpf",
+      "psw",
+      "psw2",
+      "name",
+      "last_name",
+      "phone",
+      "department",
+    ];
+
+    // Reject invalid fields
+    const receivedFields = Object.keys(req.body);
+
+    const invalidFields = receivedFields.filter(
+      (field) => !allowedFields.includes(field),
+    );
+
+    if (invalidFields.length > 0) {
+      return next(
+        new HttpError(`Invalid fields: ${invalidFields.join(", ")}`, 422),
+      );
+    }
+
     const { name, last_name, email, cpf, phone, psw, psw2 } = req.body;
 
     // Validate required fields and their types
@@ -167,15 +193,12 @@ export async function validateRegisterManager(req, res, next) {
   try {
     // Fields allowed in the request
     const allowedFields = [
-      "profile_img",
       "email",
       "cpf",
       "psw",
       "psw2",
       "name",
       "last_name",
-      "filter",
-      "team_id",
     ];
 
     // Reject invalid fields
@@ -301,14 +324,11 @@ export async function validateRegisterAnalyst(req, res, next) {
   try {
     // Fields allowed in the request
     const allowedFields = [
-      "profile_img",
       "email",
       "psw",
       "psw2",
       "name",
       "last_name",
-      "filter",
-      "team_id",
     ];
 
     // Reject invalid fields
