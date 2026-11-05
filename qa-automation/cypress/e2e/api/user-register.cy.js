@@ -27,8 +27,7 @@ const userBody = {
     "cpf": randomCpf,
     "department": randomDepartment,
     "phone": randomPhone,
-    "last_name": randomLastname,
-    "profile_img": "null" 
+    "last_name": randomLastname
 }
 
 describe ('Registro de Usuário', ()=> {

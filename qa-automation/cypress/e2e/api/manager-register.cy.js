@@ -14,15 +14,12 @@ const userBody = {
     "psw": Password,
     "psw2": Password,
     "cpf": randomCpf,
-    "last_name": randomLastname,
-    "team_id": null,
-    "filter": null,
-    "profile_img": null
+    "last_name": randomLastname
 }
 
 describe ('Registro de Gerente', ()=> {
     
-    it ('Testando Gerente cadastrado com sucesso!', ()=> {
+    it ('Testando cadastro de gerente com sucesso!', ()=> {
         cy.request({
             method: 'POST',
             url: apiUrl, 

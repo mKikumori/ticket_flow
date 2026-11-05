@@ -5,7 +5,7 @@ const apiUrl = 'http://localhost:5001/api/auth/register'
 
 // Variaveis Fixas 
 const name = 'Diego';
-const email = 'Diego.lima676767@gmail.com'; 
+const email = 'Diego.lima.676767.teste@gmail.com'; 
 const lastName = 'Lima'; 
 const Password = 'Teste@2026AB';
 const departments = [
@@ -39,10 +39,8 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongName')
-
 
         //Validações do Request 
         cy.get('@PostUserWrongName')
@@ -67,8 +65,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWithout@')
 
         //Validações do Request 
@@ -93,8 +90,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": faker.string.numeric(10),
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongCPF')
 
         //Validações do Request 
@@ -119,8 +115,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": faker.string.numeric(12),
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongCPF++')
 
         //Validações do Request 
@@ -145,8 +140,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": 'olá,mundo12',
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongCPFwithLetters')
 
         //Validações do Request 
@@ -170,8 +164,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": randomCpf,
                     "department": 'Outros',
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongDepartment')
 
         //Validações do Request 
@@ -196,8 +189,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": faker.string.numeric(10),
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPhone')
 
         //Validações do Request 
@@ -222,8 +214,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": faker.string.numeric(12),
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPhone++')
 
         //Validações do Request 
@@ -248,8 +239,7 @@ describe ('Registro de Usuário', ()=> {
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": faker.person.firstName(11),
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPhonewithLetters')
 
         //Validações do Request 
@@ -261,6 +251,31 @@ describe ('Registro de Usuário', ()=> {
             })
     });
 
+    it('Testando envio com body incorreto', ()=> {
+        cy.request({
+            method: 'POST',
+            url: apiUrl,
+            failOnStatusCode: false,
+            body: {"name": name,
+                    "email": email,
+                    "psw": Password,
+                    "psw2": Password,
+                    "cpf": randomCpf,
+                    "department": randomDepartment,
+                    "team_id": null,
+                    "phone": randomPhone,
+                    "last_name": lastName}
+        }).as('PostUserInvalidBody')
+
+        //Validações do Request 
+        cy.get('@PostUserInvalidBody')
+            .then((response) => {
+                console.log(response)
+
+                expect(response.status).equal(422)
+                expect(response.body.message).include('Invalid fields: team_id')
+            })
+    });
 });
 
 
@@ -278,8 +293,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPswLowercase')
 
 
@@ -305,8 +319,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPswUppercase')
 
 
@@ -332,8 +345,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPswLeast')
 
 
@@ -362,8 +374,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPswMax')
 
 
@@ -389,8 +400,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPswNoSpecialChar')
 
         //Validações do Request 
@@ -415,8 +425,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
             }).as('PostUserWrongPswNoNumber')
 
         //Validações do Request 
@@ -442,8 +451,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPswNoConfirmation')
 
         //Validações do Request 
@@ -468,8 +476,7 @@ describe ('Registro de usuário - Senha', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserWrongPswNoConfirmation')
 
         //Validações do Request 
@@ -492,14 +499,13 @@ describe('registro de usuário - Already exists', ()=>{
             url: apiUrl,
             failOnStatusCode: false,
             body: {"name": name,
-                    "email": 'Diego.lima101520304050@gmail.com',
+                    "email": 'Diego.lima10152030.master@gmail.com',
                     "psw": Password,
                     "psw2": Password,
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserEmailAlreadyExists')
     
         //Validações do Request 
@@ -524,8 +530,7 @@ describe('registro de usuário - Already exists', ()=>{
                     "cpf": '11111111111',
                     "department": randomDepartment,
                     "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserCpfAlreadyExists')
 
         //Validações do Request 
@@ -550,8 +555,7 @@ describe('registro de usuário - Already exists', ()=>{
                     "cpf": randomCpf,
                     "department": randomDepartment,
                     "phone": '10925259508',
-                    "last_name": lastName,
-                    "profile_img": "null"}
+                    "last_name": lastName}
         }).as('PostUserPhoneAlreadyExists')
 
         //Validações do Request 
@@ -561,31 +565,6 @@ describe('registro de usuário - Already exists', ()=>{
 
                 expect(response.status).equal(409)
                 expect(response.body.message).equal('Phone already exists')
-            })
-    });
-
-    it('Testando envio com body incorreto', ()=> {
-        cy.request({
-            method: 'POST',
-            url: apiUrl,
-            failOnStatusCode: false,
-            body: {"name": name,
-                    "email": email,
-                    "psw": Password,
-                    "psw2": Password,
-                    "cpf": randomCpf,
-                    "department": randomDepartment,
-                    "team_id": null,
-                    "phone": randomPhone,
-                    "last_name": lastName,
-                    "profile_img": "null"}
-        }).as('PostUserInvalidBody')
-
-        //Validações do Request 
-        cy.get('@PostUserInvalidBody')
-            .then((response) => {
-                console.log(response)
-
             })
     }); 
 
