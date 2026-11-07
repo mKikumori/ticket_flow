@@ -9,8 +9,7 @@ import {
   hashSensitiveData,
 } from "../utils/sensitiveData.js";
 
-// POST to register new user
-// api/auth/register
+// POST /api/auth/register
 export async function registerUser(req, res, next) {
   try {
     const { name, email, psw, cpf, department, phone, last_name, profile_img } =
@@ -208,7 +207,6 @@ export async function registerManager(req, res, next) {
 }
 
 // POST /api/auth/login
-
 export async function loginUser(req, res, next) {
   try {
     const { email, psw } = req.body;
@@ -282,40 +280,6 @@ export async function loginUser(req, res, next) {
     return next(new HttpError(`Login failed: ${error.message}`, 422));
   }
 }
-
-// POST /api/auth/login_analyst
-/*export async function loginAnalyst(req, res, next) {
-  try {
-    const { email, psw } = req.body;
-    if (!email || !psw) {
-      return next(new HttpError("Fill in all fields", 422));
-    }
-
-    const newEmail = email.toLowerCase();
-    const analyst = await Analyst.findOne({ email: newEmail });
-
-    if (!analyst) {
-      return next(new HttpError("Invalid credantions", 422));
-    }
-
-    const comparePsw = await bcrypt.compare(psw, analyst.psw);
-    if (!comparePsw) {
-      return next(new HttpError("Invalid credantions", 422));
-    }
-
-    // login expire eta
-    const { _id: id, name } = analyst;
-    const token = jwt.sign({ id, name }, process.env.TOKEN, {
-      expiresIn: "1d",
-    });
-
-    res.status(200).json({ token, id, name });
-  } catch (error) {
-    console.error("Analyst Login error:", error);
-
-    return next(new HttpError("Analyst Login failed", 422));
-  }
-}*/
 
 // POST /api/auth/logout
 export async function logout(req, res, next) {
