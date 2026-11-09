@@ -1,9 +1,11 @@
 import { Link, useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
+import { UserContext } from "../../context/UserContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setCurrentUser } = useContext(UserContext);
 
   const [userData, setUserData] = useState({
     email: "",
@@ -45,6 +47,13 @@ const Login = () => {
       // Salva os dados básicos do usuário em localStorage
       localStorage.setItem("user", JSON.stringify({ id, name }));
 
+      setCurrentUser({
+        id: response.data.id,
+        name: response.data.name,
+        token: response.data.token,
+        role: response.data.role,
+      });
+
       // retorne automaticamente para a pagina Home
       navigate("/");
     } catch (err) {
@@ -59,51 +68,108 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={loginUser}>
-        <input
-          type="email"
-          placeholder="Email"
-          name="email"
-          value={userData.email}
-          onChange={changeInputHandler}
-          autoFocus
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          name="psw"
-          value={userData.psw}
-          onChange={changeInputHandler}
-          required
-        />
-
-        {error && <p>{error}</p>}
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Entrando..." : "Login"}
+    <main className="login-page">
+      {/* LEFT PANEL */}
+      <section className="login-main" aria-label="Acesso à plataforma">
+        {/* Language */}
+        <button
+          className="language-button"
+          type="button"
+          aria-label="Idioma: português"
+          title="Português"
+        >
+          <span role="img" aria-label="Brasil">
+            🇧🇷
+          </span>
         </button>
-      </form>
 
-      <div>
-        <small>
-          Ainda não possui uma conta?{" "}
-          <Link to="/register">Crie uma agora!</Link>
-        </small>
-      </div>
+        <div className="login-content">
+          {/* Logo */}
+          <h1 className="brand-logo" aria-label="TicketFlow">
+            <span>Ticket</span>
+            <span>Flow</span>
+          </h1>
 
-      <div>
-        <small>
-          <Link to="/forgotpsw">Esqueci minha senha</Link>
-        </small>
-      </div>
+          {/* Login Form */}
+          <form className="login-form" onSubmit={loginUser}>
+            {/* Email */}
+            <div className="form-field">
+              <label htmlFor="login-email">Insira seu e-mail:</label>
 
-      <button type="button" onClick={() => navigate("/")}>
-        Home
-      </button>
-    </div>
+              <input
+                id="login-email"
+                type="email"
+                placeholder="Email"
+                name="email"
+                value={userData.email}
+                onChange={changeInputHandler}
+                autoComplete="username"
+                autoFocus
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div className="form-field">
+              <label htmlFor="login-password">Insira sua senha:</label>
+
+              <input
+                id="login-password"
+                type="password"
+                placeholder="Senha"
+                name="psw"
+                value={userData.psw}
+                onChange={changeInputHandler}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+
+            {/* Forgot Password */}
+            <Link className="forgot-password" to="/forgotpsw">
+              Esqueceu a senha?
+            </Link>
+
+            {/* Error */}
+            {error && (
+              <p className="login-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            {/* Submit */}
+            <button className="login-submit" type="submit" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
+            </button>
+
+            {/* Register */}
+            <Link className="register-link" to="/register">
+              Registre-se aqui
+            </Link>
+          </form>
+        </div>
+      </section>
+
+      {/* RIGHT PANEL */}
+      <aside className="login-aside">
+        <div className="aside-copy">
+          <h2>Lorem Ipsum</h2>
+
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
+            tincidunt quis ipsum ut lacinia. Praesent viverra in tortor
+            vestibulum vulputate.
+          </p>
+        </div>
+
+        {/* Footer */}
+        <footer className="aside-footer">
+          <Link to="/terms">Licenças de uso</Link>
+
+          <Link to="/privacy">Aviso de privacidade</Link>
+        </footer>
+      </aside>
+    </main>
   );
 };
 
