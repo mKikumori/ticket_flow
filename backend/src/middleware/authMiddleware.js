@@ -130,12 +130,12 @@ export async function validateRegisterUser(req, res, next) {
 
     // Validate CPF: exactly 11 digits
     if (!/^\d{11}$/.test(cpf)) {
-      return next(new HttpError("CPF must contain exactly 11 digits", 422));
+      return next(new HttpError("CPF must contain exactly 11 digits and no letters", 422));
     }
 
     // Validate phone: exactly 11 digits
     if (!/^\d{11}$/.test(phone)) {
-      return next(new HttpError("Phone must contain exactly 11 digits", 422));
+      return next(new HttpError("Phone must contain exactly 11 digits and no letters", 422));
     }
 
     // Validate password length
@@ -264,7 +264,7 @@ export async function validateRegisterManager(req, res, next) {
 
     // Validate CPF: exactly 11 digits
     if (!/^\d{11}$/.test(cpf)) {
-      return next(new HttpError("CPF must contain exactly 11 digits", 422));
+      return next(new HttpError("CPF must contain exactly 11 digits and no letters", 422));
     }
 
     // Validate password length
