@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { useState, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "../../context/UserContext";
+import AuthHero from "../../components/AuthHero";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,11 +12,10 @@ const Login = () => {
     email: "",
     psw: "",
   });
-
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // handle and store the user's inputs
   const changeInputHandler = (e) => {
     setUserData((prevState) => ({
       ...prevState,
@@ -23,7 +23,6 @@ const Login = () => {
     }));
   };
 
-  // function to login the user
   const loginUser = async (e) => {
     e.preventDefault();
     setError("");
@@ -41,10 +40,7 @@ const Login = () => {
         throw new Error("O servidor não retornou um token de autenticação.");
       }
 
-      // Salva o JWT no localStorage
       localStorage.setItem("token", token);
-
-      // Salva os dados básicos do usuário em localStorage
       localStorage.setItem("user", JSON.stringify({ id, name }));
 
       setCurrentUser({
@@ -54,8 +50,7 @@ const Login = () => {
         role: response.data.role,
       });
 
-      // retorne automaticamente para a pagina Home
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -69,37 +64,24 @@ const Login = () => {
 
   return (
     <main className="login-page">
-      {/* LEFT PANEL */}
-      <section className="login-main" aria-label="Acesso à plataforma">
-        {/* Language */}
-        <button
-          className="language-button"
-          type="button"
-          aria-label="Idioma: português"
-          title="Português"
-        >
-          <span role="img" aria-label="Brasil">
-            🇧🇷
-          </span>
-        </button>
+      <AuthHero />
 
-        <div className="login-content">
-          {/* Logo */}
-          <h1 className="brand-logo" aria-label="TicketFlow">
-            <span>Ticket</span>
-            <span>Flow</span>
-          </h1>
+      <section className="login-panel" aria-label="Acesso à plataforma">
+        <form className="login-form" onSubmit={loginUser}>
+          <p className="login-kicker">Ticketflow</p>
+          <h2>Bem-vindo ao TicketFlow</h2>
+          <p className="login-lead">
+            Entre para acompanhar chamados e resolver com o seu time.
+          </p>
 
-          {/* Login Form */}
-          <form className="login-form" onSubmit={loginUser}>
-            {/* Email */}
-            <div className="form-field">
-              <label htmlFor="login-email">Insira seu e-mail:</label>
-
+          <div className="form-field">
+            <label htmlFor="login-email">Email</label>
+            <div className="login-input">
+              <MailIcon />
               <input
                 id="login-email"
                 type="email"
-                placeholder="Email"
+                placeholder="voce@empresa.com"
                 name="email"
                 value={userData.email}
                 onChange={changeInputHandler}
@@ -108,15 +90,16 @@ const Login = () => {
                 required
               />
             </div>
+          </div>
 
-            {/* Password */}
-            <div className="form-field">
-              <label htmlFor="login-password">Insira sua senha:</label>
-
+          <div className="form-field">
+            <label htmlFor="login-password">Senha</label>
+            <div className="login-input">
+              <LockIcon />
               <input
                 id="login-password"
                 type="password"
-                placeholder="Senha"
+                placeholder="••••••••"
                 name="psw"
                 value={userData.psw}
                 onChange={changeInputHandler}
@@ -124,53 +107,76 @@ const Login = () => {
                 required
               />
             </div>
+          </div>
 
-            {/* Forgot Password */}
-            <Link className="forgot-password" to="/forgotpsw">
-              Esqueceu a senha?
-            </Link>
+          <div className="login-row">
+            <label className="login-remember">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+              Manter conectado
+            </label>
+            <Link to="/forgotpsw">Esqueci minha senha</Link>
+          </div>
 
-            {/* Error */}
-            {error && (
-              <p className="login-error" role="alert">
-                {error}
-              </p>
-            )}
+          {error && (
+            <p className="login-error" role="alert">
+              {error}
+            </p>
+          )}
 
-            {/* Submit */}
-            <button className="login-submit" type="submit" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
-            </button>
+          <button className="login-submit" type="submit" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar na plataforma"}
+            {!loading && <ArrowIcon />}
+          </button>
 
-            {/* Register */}
-            <Link className="register-link" to="/register">
-              Registre-se aqui
-            </Link>
-          </form>
-        </div>
+          <div className="login-divider">
+            <span>ou</span>
+          </div>
+
+          <Link className="login-create" to="/register">
+            <UserIcon />
+            Criar conta de usuário
+          </Link>
+        </form>
+
+        <p className="login-help">
+          Precisa de ajuda para acessar?{" "}
+          <a href="mailto:suporte@ticketflow.com">Falar com o suporte</a>
+        </p>
       </section>
-
-      {/* RIGHT PANEL */}
-      <aside className="login-aside">
-        <div className="aside-copy">
-          <h2>Lorem Ipsum</h2>
-
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-            tincidunt quis ipsum ut lacinia. Praesent viverra in tortor
-            vestibulum vulputate.
-          </p>
-        </div>
-
-        {/* Footer */}
-        <footer className="aside-footer">
-          <Link to="/terms">Licenças de uso</Link>
-
-          <Link to="/privacy">Aviso de privacidade</Link>
-        </footer>
-      </aside>
     </main>
   );
 };
+
+const MailIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M4 7l8 6 8-6" />
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="5" y="11" width="14" height="9" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="8" r="3.2" />
+    <path d="M5.5 19.2a6.5 6.5 0 0 1 13 0" />
+  </svg>
+);
+
+const ArrowIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 12h14" />
+    <path d="M13 6l6 6-6 6" />
+  </svg>
+);
 
 export default Login;

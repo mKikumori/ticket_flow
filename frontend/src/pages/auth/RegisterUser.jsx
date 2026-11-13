@@ -1,285 +1,358 @@
 import { Link, useNavigate } from "react-router";
-import { useState } from "react";
-import axios from "axios";
+import { useEffect, useRef, useState } from "react";
+import AuthHero from "../../components/AuthHero";
+
+const CODE_LENGTH = 6;
+const RESEND_SECONDS = 42;
+
+const emptyCode = () => Array.from({ length: CODE_LENGTH }, () => "");
+
+const formatTime = (totalSeconds) => {
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
 
 const Register = () => {
   const navigate = useNavigate();
+  const [step, setStep] = useState("form");
+  const [form, setForm] = useState({ name: "", email: "", psw: "" });
+  const [digits, setDigits] = useState(emptyCode);
+  const [seconds, setSeconds] = useState(RESEND_SECONDS);
+  const [alert, setAlert] = useState(null);
+  const inputsRef = useRef([]);
+  const redirectRef = useRef(null);
 
-  const [userData, setUserData] = useState({
-    email: "",
-    psw: "",
-    cpf: "",
-    department: "",
-    name: "",
-    last_name: "",
-    phone: "",
-    psw2: "",
-  });
+  useEffect(() => {
+    if (step !== "code" || seconds <= 0) return undefined;
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+    const timer = setTimeout(() => {
+      setSeconds((current) => current - 1);
+    }, 1000);
 
-  // handle and save te user's input
-  const changeInputHandler = (e) => {
-    setUserData((prevState) => ({
-      ...prevState,
-      [e.target.name]: e.target.value,
-    }));
+    return () => clearTimeout(timer);
+  }, [step, seconds]);
+
+  useEffect(() => {
+    if (step === "code") {
+      inputsRef.current[0]?.focus();
+    }
+  }, [step]);
+
+  useEffect(() => {
+    return () => clearTimeout(redirectRef.current);
+  }, []);
+
+  const changeInput = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
   };
 
-  // funciton to register the user
-  const registerUser = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const createAccount = (event) => {
+    event.preventDefault();
+    setAlert(null);
 
-    try {
-      const response = await axios.post(
-        `http://localhost:5001/api/auth/register`,
-        userData,
-      );
+    const name = form.name.trim();
+    const email = form.email.trim().toLowerCase();
+    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-      const newUser = await response.data;
+    if (name.length < 2) {
+      setAlert({
+        type: "error",
+        title: "Não foi possível criar a conta",
+        text: "Informe seu nome completo.",
+      });
+      return;
+    }
 
-      if (!newUser) {
-        setError("Couldn't register User. Please try again");
-      }
+    if (!emailIsValid) {
+      setAlert({
+        type: "error",
+        title: "Não foi possível criar a conta",
+        text: "Informe um email válido.",
+      });
+      return;
+    }
 
-      navigate("/login");
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Não foi possível registrar.",
-      );
-    } finally {
-      setLoading(false);
+    if (form.psw.trim().length < 6) {
+      setAlert({
+        type: "error",
+        title: "Não foi possível criar a conta",
+        text: "A senha precisa ter pelo menos 6 caracteres.",
+      });
+      return;
+    }
+
+    setDigits(emptyCode());
+    setSeconds(RESEND_SECONDS);
+    setAlert({
+      type: "success",
+      title: "Código enviado",
+      text: `Enviamos um código de 6 dígitos para ${email}.`,
+    });
+    setStep("code");
+  };
+
+  const changeDigit = (index, value) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+
+    setDigits((current) => {
+      const next = [...current];
+      next[index] = digit;
+      return next;
+    });
+
+    if (digit && index < CODE_LENGTH - 1) {
+      inputsRef.current[index + 1]?.focus();
     }
   };
+
+  const pasteCode = (event) => {
+    const pasted = event.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, CODE_LENGTH);
+
+    if (!pasted) return;
+
+    event.preventDefault();
+    setDigits(
+      Array.from({ length: CODE_LENGTH }, (_, index) => pasted[index] || ""),
+    );
+    inputsRef.current[Math.min(pasted.length, CODE_LENGTH - 1)]?.focus();
+  };
+
+  const onDigitKeyDown = (index, event) => {
+    if (event.key === "Backspace" && !digits[index] && index > 0) {
+      inputsRef.current[index - 1]?.focus();
+    }
+  };
+
+  const resendCode = () => {
+    if (seconds > 0) return;
+
+    setDigits(emptyCode());
+    setSeconds(RESEND_SECONDS);
+    setAlert({
+      type: "success",
+      title: "Código reenviado",
+      text: `Enviamos um novo código para ${form.email.trim().toLowerCase()}.`,
+    });
+    inputsRef.current[0]?.focus();
+  };
+
+  const confirmCode = (event) => {
+    event.preventDefault();
+
+    if (digits.join("").length < CODE_LENGTH) {
+      setAlert({
+        type: "error",
+        title: "Não foi possível criar a conta",
+        text: "O código está incompleto. Confira os 6 dígitos e tente de novo.",
+      });
+      return;
+    }
+
+    setAlert({
+      type: "success",
+      title: "Conta criada",
+      text: "Sua conta foi criada com sucesso. Vamos te levar para o login.",
+    });
+
+    redirectRef.current = setTimeout(() => navigate("/login"), 1400);
+  };
+
   return (
-    <main className="register-page">
-      {/* LEFT PANEL */}
-      <section className="register-main" aria-label="Cadastro de usuário">
-        {/* Language */}
-        <button
-          className="language-button"
-          type="button"
-          aria-label="Idioma: português"
-          title="Português"
-        >
-          <span role="img" aria-label="Brasil">
-            🇧🇷
-          </span>
-        </button>
+    <main className="login-page">
+      <AuthHero />
 
-        <div className="register-content">
-          {/* Logo */}
-          <h1 className="brand-logo" aria-label="TicketFlow">
-            <span>Ticket</span>
-            <span>Flow</span>
-          </h1>
+      <section className="login-panel register-panel" aria-label="Criar conta">
+        {step === "form" ? (
+          <form className="login-form" onSubmit={createAccount}>
+            <p className="login-kicker">Ticketflow</p>
+            <h2>Crie sua conta</h2>
+            <p className="login-lead">
+              Abra e acompanhe seus chamados em um só lugar
+            </p>
 
-          <h2 className="register-title">Criar conta</h2>
+            {alert && <AuthAlert alert={alert} />}
 
-          <p className="register-subtitle">
-            Preencha seus dados para acessar o TicketFlow.
-          </p>
-
-          {/* Register Form */}
-          <form className="register-form" onSubmit={registerUser}>
-            {/* First Name */}
             <div className="form-field">
-              <label htmlFor="register-name">Nome</label>
-
-              <input
-                id="register-name"
-                type="text"
-                placeholder="Nome"
-                name="name"
-                value={userData.name}
-                onChange={changeInputHandler}
-                autoFocus
-                required
-              />
+              <label htmlFor="register-name">Nome completo</label>
+              <div className="login-input">
+                <UserIcon />
+                <input
+                  id="register-name"
+                  type="text"
+                  name="name"
+                  placeholder="Como podemos chamar você?"
+                  value={form.name}
+                  onChange={changeInput}
+                  autoComplete="name"
+                  autoFocus
+                />
+              </div>
             </div>
 
-            {/* Last Name */}
             <div className="form-field">
-              <label htmlFor="register-last-name">Sobrenome</label>
-
-              <input
-                id="register-last-name"
-                type="text"
-                placeholder="Sobrenome"
-                name="last_name"
-                value={userData.last_name}
-                onChange={changeInputHandler}
-                required
-              />
+              <label htmlFor="register-email">Email</label>
+              <div className="login-input">
+                <MailIcon />
+                <input
+                  id="register-email"
+                  type="email"
+                  name="email"
+                  placeholder="voce@empresa.com"
+                  value={form.email}
+                  onChange={changeInput}
+                  autoComplete="email"
+                />
+              </div>
             </div>
 
-            {/* Email */}
-            <div className="form-field register-full-width">
-              <label htmlFor="register-email">E-mail</label>
-
-              <input
-                id="register-email"
-                type="email"
-                placeholder="Email"
-                name="email"
-                value={userData.email}
-                onChange={changeInputHandler}
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            {/* CPF */}
-            <div className="form-field">
-              <label htmlFor="register-cpf">CPF</label>
-
-              <input
-                id="register-cpf"
-                type="text"
-                placeholder="Somente números"
-                name="cpf"
-                value={userData.cpf}
-                onChange={changeInputHandler}
-                inputMode="numeric"
-                maxLength={11}
-                pattern="[0-9]{11}"
-                title="O CPF deve conter 11 números."
-                required
-              />
-            </div>
-
-            {/* Phone */}
-            <div className="form-field">
-              <label htmlFor="register-phone">Número de celular</label>
-
-              <input
-                id="register-phone"
-                type="tel"
-                placeholder="Somente números"
-                name="phone"
-                value={userData.phone}
-                onChange={changeInputHandler}
-                inputMode="numeric"
-                maxLength={11}
-                pattern="[0-9]{11}"
-                title="O telefone deve conter 11 números."
-                required
-              />
-            </div>
-
-            {/* Department */}
-            <div className="form-field register-full-width">
-              <label htmlFor="register-department">Departamento</label>
-
-              <select
-                id="register-department"
-                name="department"
-                value={userData.department}
-                onChange={changeInputHandler}
-                required
-              >
-                <option value="" disabled>
-                  Selecione seu departamento
-                </option>
-
-                <option value="Comercial">Comercial</option>
-
-                <option value="Marketing">Marketing</option>
-
-                <option value="Facilities">Facilities</option>
-
-                <option value="Engenharia">Engenharia</option>
-
-                <option value="Financeiro">Financeiro</option>
-
-                <option value="Fiscal">Fiscal</option>
-
-                <option value="Legal">Legal</option>
-              </select>
-            </div>
-
-            {/* Password */}
             <div className="form-field">
               <label htmlFor="register-password">Senha</label>
-
-              <input
-                id="register-password"
-                type="password"
-                placeholder="Senha"
-                name="psw"
-                value={userData.psw}
-                onChange={changeInputHandler}
-                autoComplete="new-password"
-                required
-              />
+              <div className="login-input">
+                <LockIcon />
+                <input
+                  id="register-password"
+                  type="password"
+                  name="psw"
+                  placeholder="••••••••"
+                  value={form.psw}
+                  onChange={changeInput}
+                  autoComplete="new-password"
+                />
+              </div>
             </div>
 
-            {/* Confirm Password */}
-            <div className="form-field">
-              <label htmlFor="register-password-confirm">Confirmar senha</label>
-
-              <input
-                id="register-password-confirm"
-                type="password"
-                placeholder="Confirme sua senha"
-                name="psw2"
-                value={userData.psw2}
-                onChange={changeInputHandler}
-                autoComplete="new-password"
-                required
-              />
-            </div>
-
-            {/* Error */}
-            {error && (
-              <p className="register-error register-full-width" role="alert">
-                {error}
-              </p>
-            )}
-
-            {/* Submit */}
-            <button
-              className="register-submit register-full-width"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Registrando..." : "Criar conta"}
+            <button className="login-submit" type="submit">
+              Criar minha conta
+              <ArrowIcon />
             </button>
 
-            {/* Login */}
-            <p className="register-login-text register-full-width">
-              Já possui uma conta? <Link to="/login">Faça login aqui.</Link>
+            <div className="login-divider">
+              <span>ou</span>
+            </div>
+
+            <Link className="login-create" to="/register_manager">
+              <UserIcon />
+              Sou gestor de uma equipe
+            </Link>
+
+            <p className="recover-login">
+              Já possui uma conta? <Link to="/login">Fazer login</Link>
             </p>
           </form>
-        </div>
+        ) : (
+          <form className="login-form" onSubmit={confirmCode}>
+            <p className="login-kicker">Ticketflow</p>
+            <h2>Confirme seu e-mail</h2>
+            <p className="login-lead">
+              Enviamos um código de 6 dígitos para seu e-mail
+            </p>
+
+            {alert && <AuthAlert alert={alert} />}
+
+            <div className="recover-codes">
+              {digits.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(element) => {
+                    inputsRef.current[index] = element;
+                  }}
+                  inputMode="numeric"
+                  autoComplete={index === 0 ? "one-time-code" : "off"}
+                  aria-label={`Dígito ${index + 1}`}
+                  maxLength={1}
+                  value={digit}
+                  onChange={(event) => changeDigit(index, event.target.value)}
+                  onKeyDown={(event) => onDigitKeyDown(index, event)}
+                  onPaste={pasteCode}
+                />
+              ))}
+            </div>
+
+            <p className="recover-resend">
+              Não recebeu?{" "}
+              <button type="button" onClick={resendCode} disabled={seconds > 0}>
+                Reenviar código
+              </button>
+              {seconds > 0 && <span> em {formatTime(seconds)}</span>}
+            </p>
+
+            <button className="login-submit" type="submit">
+              Confirmar cadastro
+              <ArrowIcon />
+            </button>
+
+            <p className="recover-login">
+              Já possui uma conta? <Link to="/login">Fazer login</Link>
+            </p>
+          </form>
+        )}
       </section>
-
-      {/* RIGHT PANEL */}
-      <aside className="register-aside">
-        <div className="aside-copy">
-          <h2>Bem-vindo ao TicketFlow</h2>
-
-          <p>
-            Organize, acompanhe e gerencie solicitações de suporte em um único
-            lugar. Simplifique a comunicação entre equipes e acompanhe cada
-            chamado com facilidade.
-          </p>
-        </div>
-
-        {/* Footer */}
-        <footer className="aside-footer">
-          <Link to="/terms">Licenças de uso</Link>
-
-          <Link to="/privacy">Aviso de privacidade</Link>
-        </footer>
-      </aside>
     </main>
   );
 };
+
+const AuthAlert = ({ alert }) => {
+  const isError = alert.type === "error";
+
+  return (
+    <div
+      className={`auth-alert auth-alert-${alert.type}`}
+      role={isError ? "alert" : "status"}
+    >
+      <span className="auth-alert-icon" aria-hidden="true">
+        {isError ? <ErrorIcon /> : <CheckIcon />}
+      </span>
+      <div>
+        <strong>{alert.title}</strong>
+        <p>{alert.text}</p>
+      </div>
+    </div>
+  );
+};
+
+const UserIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="8" r="3.2" />
+    <path d="M5.5 19.2a6.5 6.5 0 0 1 13 0" />
+  </svg>
+);
+
+const MailIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m4 7 8 6 8-6" />
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="5" y="11" width="14" height="9" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </svg>
+);
+
+const ArrowIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 12h14" />
+    <path d="m13 6 6 6-6 6" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6.5 12.5 10 16l7.5-8" />
+  </svg>
+);
+
+const ErrorIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8 8l8 8M16 8l-8 8" />
+  </svg>
+);
 
 export default Register;
