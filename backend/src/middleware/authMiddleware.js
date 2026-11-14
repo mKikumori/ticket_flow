@@ -37,7 +37,19 @@ export function authMiddleware(req, res, next) {
   } catch (error) {
     console.error("JWT authentication error:", error.message);
 
-    return next(new HttpError("Invalid or expired token", 401));
+    if (error.name === "TokenExpiredError") {
+      return next(new HttpError("Session expired. Please log in again.", 401));
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return next(new HttpError("Invalid authentication token", 401));
+    }
+
+    if (error.name === "NotBeforeError") {
+      return next(new HttpError("Authentication token is not yet valid", 401));
+    }
+
+    return next(new HttpError("Authentication failed", 401));
   }
 }
 
@@ -55,7 +67,6 @@ export function authorizeRoles(...roles) {
 // middleware para verificar as informações do usuário ao registrar
 export async function validateRegisterUser(req, res, next) {
   try {
-
     // Fields allowed in the request
     const allowedFields = [
       "email",
@@ -130,12 +141,19 @@ export async function validateRegisterUser(req, res, next) {
 
     // Validate CPF: exactly 11 digits
     if (!/^\d{11}$/.test(cpf)) {
-      return next(new HttpError("CPF must contain exactly 11 digits and no letters", 422));
+      return next(
+        new HttpError("CPF must contain exactly 11 digits and no letters", 422),
+      );
     }
 
     // Validate phone: exactly 11 digits
     if (!/^\d{11}$/.test(phone)) {
-      return next(new HttpError("Phone must contain exactly 11 digits and no letters", 422));
+      return next(
+        new HttpError(
+          "Phone must contain exactly 11 digits and no letters",
+          422,
+        ),
+      );
     }
 
     // Validate password length
@@ -192,14 +210,7 @@ export async function validateRegisterUser(req, res, next) {
 export async function validateRegisterManager(req, res, next) {
   try {
     // Fields allowed in the request
-    const allowedFields = [
-      "email",
-      "cpf",
-      "psw",
-      "psw2",
-      "name",
-      "last_name",
-    ];
+    const allowedFields = ["email", "cpf", "psw", "psw2", "name", "last_name"];
 
     // Reject invalid fields
     const receivedFields = Object.keys(req.body);
@@ -264,7 +275,9 @@ export async function validateRegisterManager(req, res, next) {
 
     // Validate CPF: exactly 11 digits
     if (!/^\d{11}$/.test(cpf)) {
-      return next(new HttpError("CPF must contain exactly 11 digits and no letters", 422));
+      return next(
+        new HttpError("CPF must contain exactly 11 digits and no letters", 422),
+      );
     }
 
     // Validate password length
@@ -323,13 +336,7 @@ export async function validateRegisterManager(req, res, next) {
 export async function validateRegisterAnalyst(req, res, next) {
   try {
     // Fields allowed in the request
-    const allowedFields = [
-      "email",
-      "psw",
-      "psw2",
-      "name",
-      "last_name",
-    ];
+    const allowedFields = ["email", "psw", "psw2", "name", "last_name"];
 
     // Reject invalid fields
     const receivedFields = Object.keys(req.body);

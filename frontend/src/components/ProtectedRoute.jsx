@@ -6,7 +6,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
   const { currentUser } = useContext(UserContext);
 
   if (!currentUser?.token || !currentUser?.role) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
+  }
+
+  if (currentUser?.token || currentUser?.role) {
+    return <Navigate to="/home" replace />;
   }
 
   if (!allowedRoles.includes(currentUser.role)) {

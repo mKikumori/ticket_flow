@@ -15,9 +15,19 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
+
+        {/* Redirect if already logged in */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
+
         <Route path="/home" element={<Home />} />
-        <Route path="/register" element={<Register />} />
+
+        {/* Redirect if already logged in */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/register" element={<Register />} />
+        </Route>
+
         <Route path="/forgotpsw" element={<ForgotPsw />} />
         <Route path="/create_ticket" element={<CreateTicket />} />
         <Route path="/register_manager" element={<RegisterManager />} />
