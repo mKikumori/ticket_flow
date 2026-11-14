@@ -4,3 +4,5 @@ node_modules/
 
 # Screenshoots
 **/cypress/screenshots
+
+**/cypress/videos

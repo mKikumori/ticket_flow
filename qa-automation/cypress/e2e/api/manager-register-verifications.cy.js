@@ -112,7 +112,7 @@ describe('Registro de gerente', () => {
                 console.log(response)
     
                 expect(response.status).equal(422)
-                expect(response.body.message).equal('CPF must contain exactly 11 digits')
+                expect(response.body.message).equal('CPF must contain exactly 11 digits and no letters')
             })
     });
         
@@ -137,7 +137,7 @@ describe('Registro de gerente', () => {
                 console.log(response)
     
                 expect(response.status).equal(422)
-                expect(response.body.message).equal('CPF must contain exactly 11 digits')
+                expect(response.body.message).equal('CPF must contain exactly 11 digits and no letters')
             })
     });
     
@@ -162,7 +162,7 @@ describe('Registro de gerente', () => {
                 console.log(response)
     
                 expect(response.status).equal(422)
-                expect(response.body.message).equal('CPF must contain exactly 11 digits')
+                expect(response.body.message).equal('CPF must contain exactly 11 digits and no letters')
             })
     });
 }); 
