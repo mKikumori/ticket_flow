@@ -77,7 +77,9 @@ const RegisterManager = () => {
 
       <section className="login-panel register-panel" aria-label="Cadastro de gestor">
         <form className="login-form" onSubmit={requestApproval}>
-          <p className="login-kicker">Ticketflow</p>
+          <p className="login-kicker">
+            Ticket<span className="brand-flow">flow</span>
+          </p>
           <h2>Cadastre sua empresa</h2>
           <p className="login-lead">Configure o acesso gerencial do seu time</p>
 

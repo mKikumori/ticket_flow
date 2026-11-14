@@ -169,7 +169,9 @@ const Register = () => {
       <section className="login-panel register-panel" aria-label="Criar conta">
         {step === "form" ? (
           <form className="login-form" onSubmit={createAccount}>
-            <p className="login-kicker">Ticketflow</p>
+            <p className="login-kicker">
+              Ticket<span className="brand-flow">flow</span>
+            </p>
             <h2>Crie sua conta</h2>
             <p className="login-lead">
               Abra e acompanhe seus chamados em um só lugar
@@ -246,7 +248,9 @@ const Register = () => {
           </form>
         ) : (
           <form className="login-form" onSubmit={confirmCode}>
-            <p className="login-kicker">Ticketflow</p>
+            <p className="login-kicker">
+              Ticket<span className="brand-flow">flow</span>
+            </p>
             <h2>Confirme seu e-mail</h2>
             <p className="login-lead">
               Enviamos um código de 6 dígitos para seu e-mail

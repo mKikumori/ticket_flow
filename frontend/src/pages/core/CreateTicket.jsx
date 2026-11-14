@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { useState } from "react";
-import axios from "axios";
+import { api } from "../../services/api";
 
 const CreateTicket = () => {
   const [ticketData, setTicketData] = useState({
@@ -40,16 +40,7 @@ const CreateTicket = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5001/api/ticket/createTicket",
-        ticketData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const response = await api.post("/api/ticket/createTicket", ticketData);
 
       console.log("Ticket created:", response.data);
 
@@ -77,19 +68,21 @@ const CreateTicket = () => {
   return (
     <main className="ticket-page">
       <header className="ticket-header">
-        <Link to="/" className="brand-logo">
+        <Link to="/home" className="brand-logo">
           <span>Ticket</span>
-          <span>Flow</span>
+          <span className="brand-flow">Flow</span>
         </Link>
 
-        <Link to="/" className="ticket-back-link">
+        <Link to="/home" className="ticket-back-link">
           <span>←</span> Voltar para Home
         </Link>
       </header>
 
       <section className="ticket-content">
         <div className="ticket-heading">
-          <span className="ticket-label">TICKETFLOW PLATFORM</span>
+          <span className="ticket-label">
+            TICKET<span className="brand-flow">FLOW</span> PLATFORM
+          </span>
 
           <h1>
             Criar <span>chamado</span>
@@ -177,7 +170,9 @@ const CreateTicket = () => {
       </section>
 
       <footer className="ticket-footer">
-        <span>© {new Date().getFullYear()} TicketFlow</span>
+        <span>
+          © {new Date().getFullYear()} Ticket<span className="brand-flow">Flow</span>
+        </span>
         <span>Licenças de uso · Aviso de privacidade</span>
       </footer>
     </main>

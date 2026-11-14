@@ -5,7 +5,9 @@ const AuthHero = () => {
     <section className="login-hero" aria-label="Apresentação do TicketFlow">
       <div className="login-brand">
         <img src={iconTicket} alt="" />
-        <span>TicketFlow</span>
+        <span>
+          Ticket<span className="brand-flow">Flow</span>
+        </span>
       </div>
 
       <div className="login-hero-body">
@@ -58,7 +60,7 @@ const AuthHero = () => {
       </div>
 
       <p className="login-legal">
-        © 2026 TicketFlow. Todos os direitos reservados.
+        © 2026 Ticket<span className="brand-flow">Flow</span>. Todos os direitos reservados.
       </p>
     </section>
   );

@@ -15,6 +15,7 @@
   --brand-dark-hover: #481365;
   --brand-soft: rgba(148, 16, 220, 0.1);
   --brand-border: rgba(148, 16, 220, 0.5);
+  --flow: #2563eb;
 
   --success: #16834a;
   --danger: #b42318;
@@ -165,8 +166,14 @@ a:hover {
 }
 
 .brand-logo span:last-child,
-.home-logo span:last-child {
-  color: #666;
+.home-logo span:last-child,
+.brand-flow {
+  color: var(--flow);
+}
+
+.login-hero .brand-flow,
+.login-legal .brand-flow {
+  color: #7eb6ff;
 }
 
 /* Labels */
@@ -804,12 +811,106 @@ a:hover {
   box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15);
 }
 
+.login-form .login-input:has(.login-reveal) input {
+  padding-right: 42px;
+}
+
+.login-reveal {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  transform: translateY(-50%);
+}
+
+.login-reveal svg {
+  position: static;
+  top: auto;
+  left: auto;
+  width: 18px;
+  height: 18px;
+  transform: none;
+}
+
+.login-reveal:hover {
+  background: #f2f4f7;
+}
+
+.login-reveal:hover svg {
+  stroke: #2f6fed;
+}
+
+.login-form .field-warning {
+  margin: 8px 2px 0;
+  color: #b42318;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.login-form .login-input.is-invalid input {
+  border-color: #f04438;
+  background: #fffafa;
+}
+
+.login-form .login-input.is-invalid svg {
+  stroke: #f04438;
+}
+
+.login-form .login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 16px;
+  padding: 12px 14px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.login-form .login-error strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.login-error-icon {
+  display: grid;
+  flex: 0 0 18px;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.login-error-icon svg {
+  position: static;
+  width: 18px;
+  height: 18px;
+  transform: none;
+  fill: none;
+  stroke: #f04438;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .login-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 2px 0 18px;
+  margin: 4px 0 16px;
 }
 
 .login-remember {

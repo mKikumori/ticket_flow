@@ -8,6 +8,7 @@ import RegisterManager from "./pages/auth/RegisterManager";
 import RegisterAnalyst from "./pages/auth/RegisterAnalyst";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/core/Profile";
+import Analysts from "./pages/core/Analysts";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/create_ticket" element={<CreateTicket />} />
         <Route path="/register_manager" element={<RegisterManager />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/analysts" element={<Analysts />} />
 
         {/* Manager-only routes */}
         <Route element={<ProtectedRoute allowedRoles={["manager"]} />}>

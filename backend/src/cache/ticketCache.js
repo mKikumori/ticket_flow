@@ -4,31 +4,27 @@ import Ticket from "../model/ticketModel.js";
 const ticketMap = new Map();
 
 // Função para preencher o cache com o Map
-export async function loadTicketCache() {
-  const tickets = await Ticket.find().lean();
-
+export function cacheTickets(tickets) {
   ticketMap.clear();
 
   for (const ticket of tickets) {
     ticketMap.set(ticket._id.toString(), ticket);
   }
+}
+
+export async function loadTicketCache() {
+  const tickets = await Ticket.find().lean();
+
+  cacheTickets(tickets);
 
   console.log(`Loaded ${tickets.length} tickets into cache`);
 }
 
 // Operações CRUD para os tickets em Cache
 export function getCachedTicket(id) {
-  return ticketCache.get(id);
-}
-
-export function getAllCachedTickets() {
-  return Array.from(ticketCache.values());
+  return ticketMap.get(id);
 }
 
 export function setCachedTicket(ticket) {
-  ticketCache.set(ticket._id.toString(), ticket);
-}
-
-export function deleteCachedTicket(id) {
-  return ticketCache.delete(id);
+  ticketMap.set(ticket._id.toString(), ticket);
 }

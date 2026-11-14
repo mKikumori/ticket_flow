@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
-import axios from "axios";
+import { api } from "../../services/api";
 
 const RegisterAnalyst = () => {
   const navigate = useNavigate();
@@ -31,18 +31,7 @@ const RegisterAnalyst = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await axios.post(
-        `http://localhost:5001/api/auth/register_analyst`,
-        userData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const response = await api.post("/api/auth/register_analyst", userData);
 
       const newManager = await response.data;
 
@@ -64,14 +53,16 @@ const RegisterAnalyst = () => {
   return (
     <main className="register-page">
       <section className="register-main">
-        <Link to="/" className="brand-logo">
+        <Link to="/home" className="brand-logo">
           <span>Ticket</span>
-          <span>Flow</span>
+          <span className="brand-flow">Flow</span>
         </Link>
 
         <div className="register-content">
           <div className="register-heading">
-            <span className="register-label">TICKETFLOW PLATFORM</span>
+            <span className="register-label">
+              TICKET<span className="brand-flow">FLOW</span> PLATFORM
+            </span>
 
             <h1 className="register-title">Registrar analista</h1>
 
@@ -169,7 +160,9 @@ const RegisterAnalyst = () => {
         </div>
 
         <div className="aside-footer">
-          <span>© {new Date().getFullYear()} TicketFlow</span>
+          <span>
+            © {new Date().getFullYear()} Ticket<span className="brand-flow">Flow</span>
+          </span>
           <span>Licenças de uso · Aviso de privacidade</span>
         </div>
       </section>

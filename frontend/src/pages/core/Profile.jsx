@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import axios from "axios";
+import { api } from "../../services/api";
 import { UserContext } from "../../context/UserContext";
 import convertToBase64 from "../../../base64/converter.js";
 
@@ -30,17 +30,6 @@ const Profile = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Authentication configuration
-  const getAuthConfig = () => {
-    const token = localStorage.getItem("token");
-
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  };
-
   // Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -53,10 +42,7 @@ const Profile = () => {
   // Fetch profile
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5001/api/user",
-        getAuthConfig(),
-      );
+      const response = await api.get("/api/user");
 
       setProfile(response.data);
     } catch (err) {
@@ -85,11 +71,7 @@ const Profile = () => {
 
     const loadProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/api/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get("/api/user");
 
         if (!cancelled) {
           setProfile(response.data);
@@ -150,11 +132,7 @@ const Profile = () => {
       if (currentUser?.role === "user") {
         updateData.phone = profile.phone;
       }
-      const response = await axios.put(
-        "http://localhost:5001/api/user",
-        updateData,
-        getAuthConfig(),
-      );
+      const response = await api.put("/api/user", updateData);
 
       const updatedProfile = response.data;
 
@@ -246,13 +224,9 @@ const Profile = () => {
     setSuccess("");
 
     try {
-      const response = await axios.patch(
-        "http://localhost:5001/api/user/profile-picture",
-        {
-          profile_img: pfpFile,
-        },
-        getAuthConfig(),
-      );
+      const response = await api.patch("/api/user/profile-picture", {
+        profile_img: pfpFile,
+      });
 
       setProfile((previous) => ({
         ...previous,
@@ -286,12 +260,13 @@ const Profile = () => {
     <main className="profile-page">
       {/* Header */}
       <header className="profile-header">
-        <Link to="/" className="brand-logo">
-          TicketFlow
+        <Link to="/home" className="brand-logo">
+          <span>Ticket</span>
+          <span className="brand-flow">Flow</span>
         </Link>
 
         <nav className="profile-header-nav">
-          <Link to="/" className="profile-back-link">
+          <Link to="/home" className="profile-back-link">
             Voltar ao início
           </Link>
 
@@ -499,7 +474,9 @@ const Profile = () => {
 
       {/* Footer */}
       <footer className="profile-footer">
-        <span>© 2026 TicketFlow. Todos os direitos reservados.</span>
+        <span>
+          © 2026 Ticket<span className="brand-flow">Flow</span>. Todos os direitos reservados.
+        </span>
       </footer>
     </main>
   );

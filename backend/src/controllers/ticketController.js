@@ -1,7 +1,7 @@
 import HttpError from "../model/errorModel.js";
 import Ticket from "../model/ticketModel.js";
 import mongoose from "mongoose";
-import { getCachedTicket, setCachedTicket } from "../cache/ticketCache.js";
+import { cacheTickets, getCachedTicket, setCachedTicket } from "../cache/ticketCache.js";
 
 // POST to create new ticket
 // api/ticket/createTicket
@@ -75,7 +75,6 @@ export function getTicketById(req, res, next) {
 export async function updateTicketById(req, res, next) {
   try {
     const { id } = req.params;
-    const ticket = getCachedTicket(id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new HttpError("Ticket ID inválido", 400));

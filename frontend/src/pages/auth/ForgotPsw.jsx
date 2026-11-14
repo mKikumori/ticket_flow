@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import { api } from "../../services/api";
 import AuthHero from "../../components/AuthHero";
 
 const CODE_LENGTH = 6;
@@ -68,8 +68,8 @@ const ForgotPsw = () => {
     openCodeStep(`Enviamos um código de 6 dígitos para ${normalized}.`);
 
     try {
-      await axios.post(
-        "http://localhost:5001/api/auth/forgot_password",
+      await api.post(
+        "/api/auth/forgot_password",
         { email: normalized },
         { timeout: 4000 },
       );
@@ -162,7 +162,9 @@ const ForgotPsw = () => {
       <section className="login-panel" aria-label="Recuperação de senha">
         {step === "email" ? (
           <form className="login-form" onSubmit={sendResetEmail}>
-            <p className="login-kicker">Ticketflow</p>
+            <p className="login-kicker">
+              Ticket<span className="brand-flow">flow</span>
+            </p>
             <h2>Recupere sua senha</h2>
             <p className="login-lead">
               Enviaremos um link de recuperação para seu e-mail
@@ -198,7 +200,9 @@ const ForgotPsw = () => {
           </form>
         ) : (
           <form className="login-form" onSubmit={confirmCode}>
-            <p className="login-kicker">Ticketflow</p>
+            <p className="login-kicker">
+              Ticket<span className="brand-flow">flow</span>
+            </p>
             <h2>Confirme seu e-mail</h2>
             <p className="login-lead">
               Enviamos um código de 6 dígitos para seu e-mail
