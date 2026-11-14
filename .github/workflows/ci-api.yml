@@ -42,7 +42,7 @@ jobs:
         run: nohup npm run dev > ../backend.log 2>&1 &
 
       - name: Aguardar BackEnd ficar no ar
-        run: npx wait-on http://localhost:5001 --timeout 60000
+        run: npx wait-on tcp:127.0.0.1:5001 --timeout 60000
 
       - name: Mostrar log do BackEnd
         if: failure()
