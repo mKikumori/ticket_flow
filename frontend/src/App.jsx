@@ -38,10 +38,8 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/analysts" element={<Analysts />} />
 
-        {/* Manager-only routes */}
-        <Route element={<ProtectedRoute allowedRoles={["manager"]} />}>
-          <Route path="/register_analyst" element={<RegisterAnalyst />} />
-        </Route>
+        {/* TEMPORÁRIO: cadastro de analista aberto para qualquer usuário logado. Restringir ao gerente depois. */}
+        <Route path="/register_analyst" element={<RegisterAnalyst />} />
       </Routes>
     </div>
   );

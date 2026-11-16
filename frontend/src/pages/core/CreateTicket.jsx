@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import { signOut } from "../../services/auth";
 import { getToken } from "../../services/session";
 import ThemeToggle from "./ThemeToggle";
 import "./Home.css";
@@ -52,9 +53,8 @@ const CreateTicket = () => {
     setTicketData((previous) => ({ ...previous, [name]: value }));
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await signOut();
     setCurrentUser(null);
     navigate("/login");
   };

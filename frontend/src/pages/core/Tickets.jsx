@@ -1,8 +1,10 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import { signOut } from "../../services/auth";
 import ThemeToggle from "./ThemeToggle";
+import DashSearch from "./DashSearch";
 import "./Home.css";
 import "./Tickets.css";
 
@@ -22,18 +24,6 @@ const PROBLEMS = [
   "Problema 7",
   "Problema 8",
 ];
-
-const STATUS = {
-  Aberto: "is-open",
-  "Em progresso": "is-progress",
-  Fechado: "is-closed",
-};
-
-const CRITICALITY = {
-  Urgente: "is-urgent",
-  Médio: "is-medium",
-  Baixo: "is-low",
-};
 
 const VIEWS = [
   { id: "list", label: "Lista" },
@@ -78,7 +68,9 @@ function normalizeTicket(ticket) {
     requester: ticket.requester || ticket.user_name || "Solicitante",
     when: formatWhen(created),
     created,
+    criticalityValue: criticalityMap[ticket.criticality] ? ticket.criticality : "Low",
     criticality: criticalityMap[ticket.criticality] || ticket.criticality || "Baixo",
+    statusValue: statusMap[ticket.status] ? ticket.status : "Open",
     status: statusMap[ticket.status] || ticket.status || "Aberto",
     detail: ticket.description || "",
   };
@@ -103,12 +95,14 @@ const Tickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
+  const [params] = useSearchParams();
+  const [query, setQuery] = useState(() => params.get("q") || "");
   const [sort, setSort] = useState("new");
   const [form, setForm] = useState({ title: "", problem_type: PROBLEMS[0], description: "" });
   const [chatForm, setChatForm] = useState({ ticketId: "", message: "" });
   const [fileName, setFileName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [savingId, setSavingId] = useState("");
   const [notice, setNotice] = useState("");
   const [filters, setFilters] = useState({ from: "", to: "", status: "Todos", type: "Todos" });
 
@@ -181,11 +175,27 @@ const Tickets = () => {
   const roleLabel = ROLE_LABEL[currentUser.role] || "Usuário";
   const displayName = currentUser.name || "Usuário";
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await signOut();
     setCurrentUser(null);
     navigate("/login");
+  };
+
+  const updateTicket = async (ticket, patch) => {
+    if (!ticket.rawId) return;
+    setSavingId(ticket.rawId);
+    setNotice("");
+    setError("");
+    try {
+      const response = await api.put(`/api/ticket/updateTicketById/${ticket.rawId}`, patch);
+      const next = normalizeTicket(response.data);
+      setTickets((current) => current.map((item) => (item.rawId === ticket.rawId ? next : item)));
+      setNotice("Ticket atualizado.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Não foi possível atualizar o ticket.");
+    } finally {
+      setSavingId("");
+    }
   };
 
   const createTicket = async (event) => {
@@ -329,16 +339,12 @@ const Tickets = () => {
           <button type="button" className="dash-burger" aria-label="Abrir menu" onClick={() => setSideOpen(true)}>
             <MenuIcon />
           </button>
-          <label className="dash-search">
-            <SearchIcon />
-            <input
-              type="search"
-              value={query}
-              placeholder="Buscar tickets, usuários ou ID..."
-              aria-label="Buscar tickets"
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </label>
+          <DashSearch
+            tickets={tickets}
+            value={query}
+            onChange={setQuery}
+            onPick={(item) => setQuery(item.title)}
+          />
           <div className="dash-actions">
             <ThemeToggle />
             <div className="dash-anchor">
@@ -449,7 +455,7 @@ const Tickets = () => {
                       </tr>
                     )}
                     {visible.map((ticket) => (
-                      <tr key={`${ticket.id}-${ticket.title}`}>
+                      <tr key={ticket.rawId || `${ticket.id}-${ticket.title}`}>
                         <td>
                           <span className="dash-id">{ticket.id}</span>
                         </td>
@@ -458,10 +464,30 @@ const Tickets = () => {
                         <td>{ticket.when}</td>
                         <td>{ticket.type}</td>
                         <td>
-                          <span className={`pill ${CRITICALITY[ticket.criticality] || ""}`}>{ticket.criticality}</span>
+                          <select
+                            className="ticket-edit"
+                            aria-label={`Criticidade de ${ticket.title}`}
+                            value={ticket.criticalityValue}
+                            disabled={!ticket.rawId || savingId === ticket.rawId}
+                            onChange={(event) => updateTicket(ticket, { criticality: event.target.value })}
+                          >
+                            <option value="Low">Baixo</option>
+                            <option value="Medium">Médio</option>
+                            <option value="High">Urgente</option>
+                          </select>
                         </td>
                         <td>
-                          <span className={`pill ${STATUS[ticket.status] || ""}`}>{ticket.status}</span>
+                          <select
+                            className="ticket-edit"
+                            aria-label={`Status de ${ticket.title}`}
+                            value={ticket.statusValue}
+                            disabled={!ticket.rawId || savingId === ticket.rawId}
+                            onChange={(event) => updateTicket(ticket, { status: event.target.value })}
+                          >
+                            <option value="Open">Aberto</option>
+                            <option value="In Progress">Em progresso</option>
+                            <option value="Closed">Fechado</option>
+                          </select>
                         </td>
                       </tr>
                     ))}
@@ -469,7 +495,7 @@ const Tickets = () => {
                 </table>
               </div>
               <p className="tickets-foot">
-                Mostrando {visible.length} de {tickets.length} tickets
+                Mostrando {visible.length} de {tickets.length} tickets. A troca de status ou criticidade já salva o chamado.
               </p>
             </section>
           )}

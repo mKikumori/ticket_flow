@@ -2,8 +2,10 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import { signOut } from "../../services/auth";
 import convertToBase64 from "../../../base64/converter.js";
 import ThemeToggle from "./ThemeToggle";
+import DashSearch from "./DashSearch";
 import "./Home.css";
 import "./Profile.css";
 
@@ -135,9 +137,8 @@ const Profile = () => {
     : currentUser.name || "Usuário";
   const department = profile?.department || "";
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await signOut();
     setCurrentUser(null);
     navigate("/login");
   };
@@ -370,11 +371,7 @@ const Profile = () => {
           <button type="button" className="dash-burger" aria-label="Abrir menu" onClick={() => setSideOpen(true)}>
             <MenuIcon />
           </button>
-          <form className="dash-search" action="/home">
-            <SearchIcon />
-            <input type="search" name="q" placeholder="Buscar tickets, usuários ou ID..." aria-label="Buscar tickets, usuários ou ID" />
-            <kbd>Ctrl K</kbd>
-          </form>
+          <DashSearch />
           <div className="dash-actions">
             <ThemeToggle />
             <button type="button" className="dash-icon-btn" aria-label="Notificações">
@@ -751,15 +748,6 @@ function MenuIcon() {
   return (
     <Svg>
       <path d="M4 7h16M4 12h16M4 17h16" />
-    </Svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <Svg>
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-3.5-3.5" />
     </Svg>
   );
 }

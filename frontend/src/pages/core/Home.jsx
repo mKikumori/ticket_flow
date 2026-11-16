@@ -2,7 +2,10 @@ import { Fragment, useContext, useEffect, useMemo, useRef, useState } from "reac
 import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import { signOut } from "../../services/auth";
 import ThemeToggle from "./ThemeToggle";
+import AnalystModal from "./AnalystModal";
+import DashSearch from "./DashSearch";
 import "./Home.css";
 
 const ROLE_LABEL = {
@@ -89,6 +92,14 @@ const BASE_QUICK = [
     action: "manager",
     tone: "tone-slate",
     icon: BadgeIcon,
+  },
+  // TEMPORÁRIO: visível para todos. Restringir ao gerente depois.
+  {
+    title: "Novo analista",
+    text: "Cadastrar um analista",
+    action: "analyst",
+    tone: "tone-blue",
+    icon: UserPlusIcon,
   },
 ];
 
@@ -270,25 +281,25 @@ const Home = () => {
   const [activeNav, setActiveNav] = useState("visao");
   const [sideOpen, setSideOpen] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
+  const [analystOpen, setAnalystOpen] = useState(false);
   const [openTicket, setOpenTicket] = useState(null);
-  const searchRef = useRef(null);
   const periodRef = useRef(null);
   const bellRef = useRef(null);
   const userRef = useRef(null);
 
   const filtered = useMemo(() => {
-    const current = tickets.filter((ticket) => inWindow(ticket, Number(periodId)));
     const term = query.trim().toLowerCase();
+    const current = term ? tickets : tickets.filter((ticket) => inWindow(ticket, Number(periodId)));
     const matched = term
       ? current.filter((ticket) =>
-          [ticket.id, ticket.title, ticket.requester, ticket.criticality, ticket.status]
+          [ticket.id, ticket.title, ticket.requester, ticket.criticality, ticket.status, ticket.detail]
             .join(" ")
             .toLowerCase()
             .includes(term),
         )
       : current;
 
-    return matched.slice(0, 8);
+    return term ? matched : matched.slice(0, 8);
   }, [query, tickets, periodId]);
 
   useEffect(() => {
@@ -334,10 +345,6 @@ const Home = () => {
     };
 
     const onKey = (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        searchRef.current?.focus();
-      }
       if (event.key === "Escape") {
         setOpenMenu(null);
         setSideOpen(false);
@@ -367,23 +374,10 @@ const Home = () => {
   const percents = normalizePercents(snapshot.parts);
   const displayName = currentUser.name || "Usuário";
   const roleLabel = ROLE_LABEL[currentUser.role] || "Usuário";
-  const quickItems =
-    currentUser.role === "manager"
-      ? [
-          ...BASE_QUICK,
-          {
-            title: "Novo analista",
-            text: "Cadastrar um analista",
-            to: "/register_analyst",
-            tone: "tone-blue",
-            icon: UserPlusIcon,
-          },
-        ]
-      : BASE_QUICK;
+  const quickItems = BASE_QUICK;
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await signOut();
     setCurrentUser(null);
     navigate("/login");
   };
@@ -487,18 +481,16 @@ const Home = () => {
             <MenuIcon />
           </button>
 
-          <label className="dash-search">
-            <SearchIcon />
-            <input
-              ref={searchRef}
-              type="search"
-              value={query}
-              placeholder="Buscar tickets, usuários ou ID..."
-              aria-label="Buscar tickets, usuários ou ID"
-              onChange={(event) => setQuery(event.target.value)}
-            />
-            <kbd>Ctrl K</kbd>
-          </label>
+          <DashSearch
+            tickets={tickets}
+            value={query}
+            onChange={setQuery}
+            onPick={(item) => {
+              setQuery(item.title);
+              setOpenTicket(item.id);
+              showSection("tickets");
+            }}
+          />
 
           <div className="dash-actions">
             <ThemeToggle />
@@ -578,6 +570,7 @@ const Home = () => {
                   onAction={(action) => {
                     setSideOpen(false);
                     if (action === "manager") setManagerOpen(true);
+                    if (action === "analyst") setAnalystOpen(true);
                   }}
                 />
               ))}
@@ -821,6 +814,7 @@ const Home = () => {
       </div>
 
       {managerOpen && <ManagerModal onClose={() => setManagerOpen(false)} />}
+      {analystOpen && <AnalystModal onClose={() => setAnalystOpen(false)} />}
 
       <a className="dash-fab" href="mailto:suporte@ticketflow.com">
         <span aria-hidden="true">?</span>
@@ -1073,15 +1067,6 @@ function BadgeIcon() {
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <circle cx="9" cy="12" r="2" />
       <path d="M13 11h5M13 14h3" />
-    </Svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <Svg>
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-3.5-3.5" />
     </Svg>
   );
 }

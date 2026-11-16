@@ -71,12 +71,16 @@
 }
 
 @media (max-width: 860px) {
-  .chat-head {
+  .chat-head,
+  .chat-filter {
     display: grid;
   }
 
-  .dash .chat-new {
+  .chat-filter label,
+  .dash .chat-new,
+  .dash .chat-filter button {
     width: 100%;
+    min-width: 0;
   }
 }
 

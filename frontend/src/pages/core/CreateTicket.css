@@ -96,8 +96,17 @@
 }
 
 @media (max-width: 860px) {
-  .create-head {
+  .create-head,
+  .create-card .tickets-form-actions {
     display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .dash .create-back,
+  .create-card .tickets-form-actions a,
+  .create-card .tickets-form-actions button {
+    width: 100%;
+    justify-content: center;
   }
 }
 

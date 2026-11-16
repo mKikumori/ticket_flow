@@ -2,7 +2,9 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import { signOut } from "../../services/auth";
 import ThemeToggle from "./ThemeToggle";
+import DashSearch from "./DashSearch";
 import "./Home.css";
 import "./Tickets.css";
 import "./Chat.css";
@@ -113,9 +115,8 @@ const ChatPage = () => {
   const roleLabel = ROLE_LABEL[currentUser.role] || "Usuário";
   const displayName = currentUser.name || "Usuário";
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await signOut();
     setCurrentUser(null);
     navigate("/login");
   };
@@ -229,16 +230,19 @@ const ChatPage = () => {
           <button type="button" className="dash-burger" aria-label="Abrir menu" onClick={() => setSideOpen(true)}>
             <MenuIcon />
           </button>
-          <label className="dash-search">
-            <SearchIcon />
-            <input
-              type="search"
-              value={filter}
-              placeholder="Buscar chats ou tickets..."
-              aria-label="Buscar chats"
-              onChange={(event) => setFilter(event.target.value)}
-            />
-          </label>
+          <DashSearch
+            tickets={chats}
+            value={filter}
+            placeholder="Buscar chats ou tickets..."
+            onChange={(value) => {
+              setFilter(value);
+              setApplied(value);
+            }}
+            onPick={(item) => {
+              setFilter(item.title);
+              setApplied(item.title);
+            }}
+          />
           <div className="dash-actions">
             <ThemeToggle />
             <div className="dash-anchor">
@@ -498,15 +502,6 @@ function MenuIcon() {
   return (
     <Svg>
       <path d="M4 7h16M4 12h16M4 17h16" />
-    </Svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <Svg>
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-3.5-3.5" />
     </Svg>
   );
 }

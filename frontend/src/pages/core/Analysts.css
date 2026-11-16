@@ -9,9 +9,10 @@
   margin: 0;
 }
 
-.team-add {
+.dash .team-add {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   height: 42px;
   padding: 0 16px;
@@ -19,11 +20,11 @@
   background: #2563eb;
   color: #fff;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   flex: none;
 }
 
-.team-add:hover {
+.dash .team-add:hover {
   background: #1d4ed8;
   color: #fff;
 }
@@ -190,7 +191,18 @@
     align-items: stretch;
   }
 
+  .dash .team-add,
+  .team-filter-search,
+  .team-select,
+  .team-select select {
+    width: 100%;
+  }
+
   .team-stats {
     grid-template-columns: 1fr;
+  }
+
+  .team-table {
+    min-width: 640px;
   }
 }

@@ -2,7 +2,9 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import { signOut } from "../../services/auth";
 import ThemeToggle from "./ThemeToggle";
+import AnalystModal from "./AnalystModal";
 import "./Home.css";
 import "./Analysts.css";
 
@@ -49,6 +51,7 @@ const Analysts = () => {
   const [filter, setFilter] = useState("all");
   const [menuOpen, setMenuOpen] = useState(false);
   const [sideOpen, setSideOpen] = useState(false);
+  const [analystOpen, setAnalystOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -126,9 +129,8 @@ const Analysts = () => {
   const roleLabel = ROLE_LABEL[currentUser.role] || "Usuário";
   const displayName = currentUser.name || "Usuário";
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await signOut();
     setCurrentUser(null);
     navigate("/login");
   };
@@ -248,12 +250,11 @@ const Analysts = () => {
               <p className="dash-lead">Gerencie sua equipe e acompanhe os indicadores individuais.</p>
               {error && <p className="dash-load-error">{error}</p>}
             </div>
-            {currentUser.role === "manager" && (
-              <Link className="team-add" to="/register_analyst">
-                <PlusIcon />
-                Adicionar analista
-              </Link>
-            )}
+            {/* TEMPORÁRIO: visível para todos. Restringir ao gerente depois. */}
+            <button type="button" className="team-add" onClick={() => setAnalystOpen(true)}>
+              <PlusIcon />
+              Adicionar analista
+            </button>
           </div>
 
           <section className="team-stats" aria-label="Indicadores da equipe">
@@ -363,6 +364,7 @@ const Analysts = () => {
           </section>
         </main>
       </div>
+      {analystOpen && <AnalystModal onClose={() => setAnalystOpen(false)} />}
     </div>
   );
 };

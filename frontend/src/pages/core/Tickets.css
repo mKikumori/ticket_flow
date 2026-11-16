@@ -181,19 +181,50 @@
   margin: 12px 0 0;
 }
 
+.dash .ticket-edit {
+  height: 34px;
+  max-width: 150px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dash .ticket-edit:disabled {
+  opacity: 0.6;
+}
+
 @media (max-width: 860px) {
   .tickets-head,
-  .tickets-form {
+  .tickets-form,
+  .tickets-toolbar,
+  .tickets-filters,
+  .tickets-form-actions,
+  .tickets-export {
     display: grid;
     grid-template-columns: 1fr;
   }
 
   .tickets-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
   }
 
-  .dash .tickets-switch button {
-    flex: 1;
+  .dash .tickets-switch button,
+  .dash .tickets-form-actions button,
+  .dash .tickets-form-actions a,
+  .dash .tickets-export button,
+  .dash .ticket-edit,
+  .tickets-search,
+  .tickets-filters label {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
   }
 }
 
@@ -204,6 +235,7 @@ html[data-theme="night"] .dash .tickets-form select,
 html[data-theme="night"] .dash .tickets-form textarea,
 html[data-theme="night"] .dash .tickets-filters input,
 html[data-theme="night"] .dash .tickets-filters select,
+html[data-theme="night"] .dash .ticket-edit,
 html[data-theme="night"] .dash .tickets-select select,
 html[data-theme="night"] .dash .tickets-form-actions button,
 html[data-theme="night"] .dash .tickets-export button {

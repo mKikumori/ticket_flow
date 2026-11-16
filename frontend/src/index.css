@@ -1705,6 +1705,10 @@ a:hover {
   .register-content {
     width: min(100%, 500px);
   }
+
+  .register-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {
