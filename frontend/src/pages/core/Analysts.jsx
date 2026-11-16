@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import ThemeToggle from "./ThemeToggle";
 import "./Home.css";
 import "./Analysts.css";
 
@@ -154,9 +155,13 @@ const Analysts = () => {
             <GridIcon />
             Visão geral
           </Link>
-          <Link className="dash-nav-item" to="/home">
+          <Link className="dash-nav-item" to="/tickets">
             <TicketIcon />
             Tickets
+          </Link>
+          <Link className="dash-nav-item" to="/chat">
+            <MessageIcon />
+            Chat
           </Link>
           <Link className="dash-nav-item is-active" to="/analysts" aria-current="page">
             <UsersIcon />
@@ -203,6 +208,7 @@ const Analysts = () => {
             />
           </label>
           <div className="dash-actions">
+            <ThemeToggle />
             <div className="dash-anchor">
               <button
                 type="button"

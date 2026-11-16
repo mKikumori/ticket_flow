@@ -9,6 +9,8 @@ import RegisterAnalyst from "./pages/auth/RegisterAnalyst";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/core/Profile";
 import Analysts from "./pages/core/Analysts";
+import Tickets from "./pages/core/Tickets";
+import Chat from "./pages/core/Chat";
 
 const App = () => {
   return (
@@ -22,6 +24,8 @@ const App = () => {
         </Route>
 
         <Route path="/home" element={<Home />} />
+        <Route path="/tickets" element={<Tickets />} />
+        <Route path="/chat" element={<Chat />} />
 
         {/* Redirect if already logged in */}
         <Route element={<ProtectedRoute />}>

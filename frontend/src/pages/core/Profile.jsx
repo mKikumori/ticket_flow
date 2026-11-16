@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
 import convertToBase64 from "../../../base64/converter.js";
+import ThemeToggle from "./ThemeToggle";
 import "./Home.css";
 import "./Profile.css";
 
@@ -327,9 +328,13 @@ const Profile = () => {
             <GridIcon />
             Visão geral
           </Link>
-          <Link className="dash-nav-item" to="/home">
+          <Link className="dash-nav-item" to="/tickets">
             <TicketIcon />
             Tickets
+          </Link>
+          <Link className="dash-nav-item" to="/chat">
+            <MessageIcon />
+            Chat
           </Link>
           <Link className="dash-nav-item" to="/analysts">
             <UsersIcon />
@@ -371,6 +376,7 @@ const Profile = () => {
             <kbd>Ctrl K</kbd>
           </form>
           <div className="dash-actions">
+            <ThemeToggle />
             <button type="button" className="dash-icon-btn" aria-label="Notificações">
               <BellIcon />
             </button>

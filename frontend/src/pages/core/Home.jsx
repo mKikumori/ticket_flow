@@ -2,6 +2,7 @@ import { Fragment, useContext, useEffect, useMemo, useRef, useState } from "reac
 import { Link, Navigate, useNavigate } from "react-router";
 import { UserContext } from "../../context/UserContext";
 import { api } from "../../services/api";
+import ThemeToggle from "./ThemeToggle";
 import "./Home.css";
 
 const ROLE_LABEL = {
@@ -64,7 +65,7 @@ const BASE_QUICK = [
   {
     title: "Tickets",
     text: "Chamados recentes",
-    section: "tickets",
+    to: "/tickets",
     tone: "tone-amber",
     icon: TicketIcon,
   },
@@ -85,7 +86,7 @@ const BASE_QUICK = [
   {
     title: "Novo gerente",
     text: "Cadastrar um gerente",
-    to: "/register_manager",
+    action: "manager",
     tone: "tone-slate",
     icon: BadgeIcon,
   },
@@ -268,6 +269,7 @@ const Home = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const [activeNav, setActiveNav] = useState("visao");
   const [sideOpen, setSideOpen] = useState(false);
+  const [managerOpen, setManagerOpen] = useState(false);
   const [openTicket, setOpenTicket] = useState(null);
   const searchRef = useRef(null);
   const periodRef = useRef(null);
@@ -435,16 +437,15 @@ const Home = () => {
             <GridIcon />
             Visão geral
           </button>
-          <button
-            type="button"
-            className={activeNav === "tickets" ? "dash-nav-item is-active" : "dash-nav-item"}
-            aria-current={activeNav === "tickets" ? "true" : undefined}
-            onClick={() => showSection("tickets")}
-          >
+          <Link className="dash-nav-item" to="/tickets" onClick={() => setSideOpen(false)}>
             <TicketIcon />
             Tickets
             <span className="dash-badge">{snapshot.open.value}</span>
-          </button>
+          </Link>
+          <Link className="dash-nav-item" to="/chat" onClick={() => setSideOpen(false)}>
+            <MessageIcon />
+            Chat
+          </Link>
           <Link className="dash-nav-item" to="/analysts" onClick={() => setSideOpen(false)}>
             <UsersIcon />
             Analistas
@@ -500,6 +501,7 @@ const Home = () => {
           </label>
 
           <div className="dash-actions">
+            <ThemeToggle />
             <div className="dash-anchor" ref={bellRef}>
               <button
                 type="button"
@@ -573,6 +575,10 @@ const Home = () => {
                   item={item}
                   onSection={showSection}
                   onNavigate={() => setSideOpen(false)}
+                  onAction={(action) => {
+                    setSideOpen(false);
+                    if (action === "manager") setManagerOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -704,17 +710,9 @@ const Home = () => {
                     <h2 id="tickets-titulo">Tickets recentes</h2>
                     <p>Chamados que precisam da sua atenção</p>
                   </div>
-                  <button
-                    type="button"
-                    className="dash-linkish"
-                    onClick={() => {
-                      setQuery("");
-                      setOpenTicket(null);
-                      showSection("tickets");
-                    }}
-                  >
+                  <Link className="dash-linkish" to="/tickets">
                     Ver todos
-                  </button>
+                  </Link>
                 </div>
                 <div className="dash-table-wrap">
                   <table className="dash-table">
@@ -822,6 +820,8 @@ const Home = () => {
         </main>
       </div>
 
+      {managerOpen && <ManagerModal onClose={() => setManagerOpen(false)} />}
+
       <a className="dash-fab" href="mailto:suporte@ticketflow.com">
         <span aria-hidden="true">?</span>
         <span className="dash-sr">Falar com suporte</span>
@@ -830,7 +830,122 @@ const Home = () => {
   );
 };
 
-function QuickCard({ item, onSection, onNavigate }) {
+function ManagerModal({ onClose }) {
+  const [form, setForm] = useState({ name: "", company: "", email: "", psw: "" });
+  const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const submit = (event) => {
+    event.preventDefault();
+    const name = form.name.trim();
+    const company = form.company.trim();
+    const email = form.email.trim().toLowerCase();
+
+    if (name.length < 2) {
+      setError("Informe o nome completo do gerente.");
+      return;
+    }
+    if (company.length < 2) {
+      setError("Informe o nome da empresa.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Informe um e-mail válido.");
+      return;
+    }
+    if (form.psw.trim().length < 8 || form.psw.trim().length > 30) {
+      setError("A senha precisa ter de 8 a 30 caracteres.");
+      return;
+    }
+
+    setError("");
+    setSent(true);
+  };
+
+  return (
+    <div className="manager-backdrop" onClick={onClose}>
+      <section
+        className="manager-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="novo-gerente"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="manager-head">
+          <div>
+            <p className="dash-kicker">Acesso gerencial</p>
+            <h2 id="novo-gerente">Cadastrar um gerente</h2>
+          </div>
+          <button type="button" className="manager-close" onClick={onClose} aria-label="Fechar">
+            ×
+          </button>
+        </div>
+
+        {sent ? (
+          <div className="manager-done">
+            <span className="manager-done-check" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </span>
+            <h3>Solicitação enviada</h3>
+            <p>
+              O pedido de <strong>{form.name.trim()}</strong> para a empresa <strong>{form.company.trim()}</strong> foi
+              registrado. A conta só entra no sistema depois que um administrador aprovar. Você continua neste painel.
+            </p>
+            <ol>
+              <li>O administrador recebe os dados.</li>
+              <li>A conta é liberada após a análise.</li>
+              <li>O gerente acessa com o e-mail informado.</li>
+            </ol>
+            <button type="button" className="manager-submit" onClick={onClose}>
+              Continuar no painel
+            </button>
+          </div>
+        ) : (
+          <form className="manager-form" onSubmit={submit}>
+            <p>A conta de gerente não abre na hora. Envie os dados e aguarde a aprovação de um administrador.</p>
+            <ol className="manager-steps">
+              <li>Preencha os dados da pessoa e da empresa.</li>
+              <li>A solicitação fica pendente de análise.</li>
+              <li>Depois da aprovação, o acesso é liberado.</li>
+            </ol>
+            <label>
+              Nome completo
+              <input name="name" value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} required />
+            </label>
+            <label>
+              Empresa
+              <input name="company" value={form.company} onChange={(event) => setForm((current) => ({ ...current, company: event.target.value }))} required />
+            </label>
+            <label>
+              E-mail
+              <input type="email" name="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} required />
+            </label>
+            <label>
+              Senha
+              <input type="password" name="psw" minLength={8} maxLength={30} value={form.psw} onChange={(event) => setForm((current) => ({ ...current, psw: event.target.value }))} required />
+            </label>
+            {error && <p className="manager-error">{error}</p>}
+            <button type="submit" className="manager-submit">
+              Enviar solicitação
+            </button>
+          </form>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function QuickCard({ item, onSection, onNavigate, onAction }) {
   const Icon = item.icon;
   const content = (
     <>
@@ -843,6 +958,14 @@ function QuickCard({ item, onSection, onNavigate }) {
       </span>
     </>
   );
+
+  if (item.action) {
+    return (
+      <button type="button" className="dash-quick-card" onClick={() => onAction(item.action)}>
+        {content}
+      </button>
+    );
+  }
 
   if (item.to) {
     return (
