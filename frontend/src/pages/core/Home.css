@@ -1123,7 +1123,14 @@
   }
 
   .dash .dash-top {
+    gap: 8px;
     padding: 12px 16px;
+  }
+
+  .dash .dash-search {
+    flex: 1;
+    width: auto;
+    min-width: 0;
   }
 
   .dash .dash-search kbd {

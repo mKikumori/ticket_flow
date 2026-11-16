@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import HttpError from "../model/errorModel.js";
 import User from "../model/userModel.js";
 import Analyst from "../model/analystModel.js";
@@ -223,6 +224,57 @@ export async function updatePfp(req, res, next) {
     return res.status(200).json({
       profile_img: updatedAccount.profile_img,
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+const modelsByRole = {
+  user: User,
+  analyst: Analyst,
+  manager: Manager,
+};
+
+export async function updatePassword(req, res, next) {
+  try {
+    const { id, role } = req.user;
+    const { psw, psw2 } = req.body;
+    const Model = modelsByRole[role];
+
+    if (!Model) {
+      return next(new HttpError("Tipo de conta inválido.", 403));
+    }
+
+    if (typeof psw !== "string" || typeof psw2 !== "string") {
+      return next(new HttpError("Informe a nova senha e a confirmação.", 422));
+    }
+
+    if (psw.length < 8) {
+      return next(new HttpError("A senha precisa ter pelo menos 8 caracteres.", 422));
+    }
+
+    if (psw.length > 30) {
+      return next(new HttpError("A senha pode ter no máximo 30 caracteres.", 422));
+    }
+
+    if (!/[a-z]/.test(psw) || !/[A-Z]/.test(psw) || !/[0-9]/.test(psw) || !/[^a-zA-Z0-9]/.test(psw)) {
+      return next(
+        new HttpError("Use maiúscula, minúscula, número e um símbolo.", 422),
+      );
+    }
+
+    if (psw !== psw2) {
+      return next(new HttpError("As senhas não conferem.", 422));
+    }
+
+    const hashedPassword = await bcrypt.hash(psw, 12);
+    const updatedAccount = await Model.findByIdAndUpdate(id, { psw: hashedPassword });
+
+    if (!updatedAccount) {
+      return next(new HttpError("Não foi possível atualizar a senha.", 404));
+    }
+
+    return res.status(200).json({ message: "Senha atualizada." });
   } catch (error) {
     return next(error);
   }

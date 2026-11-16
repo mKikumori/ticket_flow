@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useState, useContext } from "react";
 import { api } from "../../services/api";
+import { remembered, saveSession } from "../../services/session";
 import { UserContext } from "../../context/UserContext";
 import AuthHero from "../../components/AuthHero";
 
@@ -12,7 +13,7 @@ const Login = () => {
     email: "",
     psw: "",
   });
-  const [remember, setRemember] = useState(false);
+  const [remember, setRemember] = useState(remembered);
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [error, setError] = useState("");
@@ -51,15 +52,15 @@ const Login = () => {
         throw new Error("O servidor não retornou um token de autenticação.");
       }
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify({ id, name }));
-
-      setCurrentUser({
-        id: response.data.id,
-        name: response.data.name,
-        token: response.data.token,
+      const sessionUser = {
+        id,
+        name,
+        token,
         role: response.data.role,
-      });
+      };
+
+      saveSession(sessionUser, remember);
+      setCurrentUser(sessionUser);
 
       navigate("/home");
     } catch (err) {

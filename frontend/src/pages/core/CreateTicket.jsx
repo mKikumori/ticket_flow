@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { useState } from "react";
 import { api } from "../../services/api";
+import { getToken } from "../../services/session";
 
 const CreateTicket = () => {
   const [ticketData, setTicketData] = useState({
@@ -30,7 +31,7 @@ const CreateTicket = () => {
     setError("");
     setSuccess("");
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     if (!token) {
       setError("Você precisa fazer login antes de criar um chamado.");

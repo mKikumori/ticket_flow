@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
+import { clearSession, loadSession, saveSession } from "../services/session";
 
 const isTokenExpired = (token) => {
   try {
@@ -15,31 +16,23 @@ const isTokenExpired = (token) => {
 
 const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const user = localStorage.getItem("user");
-      const token = localStorage.getItem("token");
+    const user = loadSession();
 
-      if (!user || !token || isTokenExpired(token)) {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        return null;
-      }
-
-      return JSON.parse(user);
-    } catch {
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
+    if (!user?.token || isTokenExpired(user.token)) {
+      clearSession();
       return null;
     }
+
+    return user;
   });
 
   useEffect(() => {
     if (currentUser === null) {
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-    } else {
-      localStorage.setItem("user", JSON.stringify(currentUser));
+      clearSession();
+      return;
     }
+
+    saveSession(currentUser, localStorage.getItem("remember") !== "0");
   }, [currentUser]);
 
   return (

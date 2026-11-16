@@ -1,4 +1,5 @@
 import axios from "axios";
+import { clearSession, getToken } from "./session";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
@@ -9,7 +10,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -25,8 +26,7 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       error.response?.data?.message === "Session expired. Please log in again."
     ) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      clearSession();
 
       window.location.href = "/login";
     }
