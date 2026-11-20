@@ -2,12 +2,14 @@ import HttpError from "../model/errorModel.js";
 import User from "../model/userModel.js";
 import Analyst from "../model/analystModel.js";
 import Manager from "../model/managerModel.js";
+import OTP from "../model/otpModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
   encryptSensitiveData,
   hashSensitiveData,
 } from "../utils/sensitiveData.js";
+import { sendEmail } from "../config/emailSender.js";
 
 // POST /api/auth/register
 export async function registerUser(req, res, next) {
@@ -289,5 +291,111 @@ export async function logout(req, res, next) {
     });
   } catch (error) {
     return next(new HttpError(`Logout failed: ${error.message}`, 422));
+  }
+}
+
+// POST /api/auth/forgot_password
+export async function forgotPsw(req, res, next) {
+  const { email } = req.body;
+  try {
+    if (typeof email !== "string" || !email.trim()) {
+      return next(new HttpError("Email is required", 422));
+    }
+
+    const newEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({ email: newEmail });
+    const analyst = await Analyst.findOne({ email: newEmail });
+    const manager = await Manager.findOne({ email: newEmail });
+
+    if (!user && !analyst && !manager) {
+      return next(new HttpError("Invalid email", 401));
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 999999);
+    console.log("OTP is: ", otp);
+
+    const newOtp = new OTP({
+      email: newEmail,
+      otp,
+    });
+    await newOtp.save();
+
+    const message = `Your verificaion code for password reset is ${otp}`;
+    await sendEmail(newEmail, "Reset Password", message);
+
+    res.status(200).json({ message: "OTP sent to your email" });
+  } catch (error) {
+    console.error("Forgot Password error:", error);
+
+    return next(new HttpError(`Forgot Password failed: ${error.message}`, 422));
+  }
+}
+
+// POST /api/auth/verify_otp
+export async function verifyOtp(req, res, next) {
+  const { email, otp } = req.body;
+
+  try {
+    const newEmail = email.trim().toLowerCase();
+    const otpRecord = await OTP.findOne({ email: newEmail, otp });
+
+    if (
+      !otpRecord ||
+      Date.now() > otpRecord.createdAt.getTime() + 60 * 60 * 1000
+    ) {
+      res.status(422).json({ message: "Invalid or expired Otp" });
+    }
+
+    res.status(200).json({ message: "Otp verification successful" });
+  } catch (error) {
+    console.error("Verify Otp error:", error);
+
+    return next(new HttpError(`Verify Otp failed: ${error.message}`, 422));
+  }
+}
+
+// POST /api/auth/reset_password
+export async function resetPsw(req, res, next) {
+  const { email, otp, newPsw } = req.body;
+
+  try {
+    const newEmail = email.trim().toLowerCase();
+    const otpRecord = await OTP.findOne({ email: newEmail, otp });
+
+    if (
+      !otpRecord ||
+      Date.now() > otpRecord.createdAt.getTime() + 60 * 60 * 1000
+    ) {
+      res.status(422).json({ message: "Invalid or expired Otp" });
+    }
+
+    const user = await User.findOne({ email: newEmail });
+    const analyst = await Analyst.findOne({ email: newEmail });
+    const manager = await Manager.findOne({ email: newEmail });
+
+    if (!user && !analyst && !manager) {
+      return next(new HttpError("Invalid email", 401));
+    }
+
+    const hashedPassword = await bcrypt.hash(newPsw, 12);
+
+    if (user) {
+      user.psw = hashedPassword;
+      await user.save();
+      await OTP.deleteMany({ email });
+    } else if (analyst) {
+      analyst.psw = hashedPassword;
+      await analyst.save();
+    } else {
+      manager.psw = hashedPassword;
+      await manager.save();
+    }
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Reset Password error:", error);
+
+    return next(new HttpError(`Rest Password failed: ${error.message}`, 422));
   }
 }
