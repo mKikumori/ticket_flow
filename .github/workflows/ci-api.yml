@@ -1,0 +1,68 @@
+name: Teste de API - Cypress
+
+on:
+  push:
+    branches:
+      - dev1
+      - develop
+  pull_request:
+    branches:
+      - dev1
+      - develop
+
+jobs:
+  cypress-api-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            qa-automation/package-lock.json
+
+      - name: Criar .env do BackEnd
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+        run: echo "$BACKEND_ENV" > backend/.env
+
+      - name: instalar dependências
+        working-directory: backend
+        run: npm ci
+
+      - name: Iniciar BackEnd
+        working-directory: backend
+        run: nohup npm run dev > ../backend.log 2>&1 &
+
+      - name: Aguardar BackEnd ficar no ar
+        run: npx wait-on tcp:127.0.0.1:5001 --timeout 60000
+
+      - name: Mostrar log do BackEnd
+        if: failure()
+        run: cat backend.log 
+
+      - name: Rodar Cypress API
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: qa-automation
+          spec: cypress/e2e/api/**/*.cy.js
+          browser: chrome
+
+      - name: Salvar vídeos e screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-api-resultados
+          path: |
+            qa-automation/cypress/videos
+            qa-automation/cypress/screenshots
+          if-no-files-found: ignore
+          retention-days: 10
+

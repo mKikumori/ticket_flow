@@ -1,0 +1,35 @@
+[
+  {
+    "id": "manager-1",
+    "name": "Marcos",
+    "last_name": "Carvalho",
+    "email": "gerente@ticketflow.com",
+    "psw": "123456",
+    "role": "manager",
+    "department": "Tecnologia",
+    "phone": null,
+    "profile_img": null
+  },
+  {
+    "id": "analyst-1",
+    "name": "Lucas",
+    "last_name": "Mendes",
+    "email": "analista@ticketflow.com",
+    "psw": "123456",
+    "role": "analyst",
+    "department": "Suporte",
+    "phone": null,
+    "profile_img": null
+  },
+  {
+    "id": "user-1",
+    "name": "Marina",
+    "last_name": "Alves",
+    "email": "usuario@ticketflow.com",
+    "psw": "123456",
+    "role": "user",
+    "department": "Financeiro",
+    "phone": "11988887777",
+    "profile_img": null
+  }
+]

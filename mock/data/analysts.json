@@ -1,0 +1,50 @@
+[
+  {
+    "id": "analyst-1",
+    "name": "Lucas",
+    "last_name": "Mendes",
+    "email": "lucas.mendes@empresa.com",
+    "assigned": 24,
+    "resolved": 19,
+    "average_minutes": 138,
+    "percent": 94,
+    "status": "Ativo",
+    "color": "#3b82f6"
+  },
+  {
+    "id": "analyst-2",
+    "name": "Ana",
+    "last_name": "Beatriz",
+    "email": "ana.beatriz@empresa.com",
+    "assigned": 19,
+    "resolved": 16,
+    "average_minutes": 112,
+    "percent": 97,
+    "status": "Ativo",
+    "color": "#8b5cf6"
+  },
+  {
+    "id": "analyst-3",
+    "name": "Juliana",
+    "last_name": "Costa",
+    "email": "juliana.costa@empresa.com",
+    "assigned": 17,
+    "resolved": 15,
+    "average_minutes": 161,
+    "percent": 91,
+    "status": "Ativo",
+    "color": "#22c55e"
+  },
+  {
+    "id": "analyst-4",
+    "name": "Rafael",
+    "last_name": "Martins",
+    "email": "rafael.martins@empresa.com",
+    "assigned": 14,
+    "resolved": 11,
+    "average_minutes": 186,
+    "percent": 88,
+    "status": "Ativo",
+    "color": "#fb923c"
+  }
+]

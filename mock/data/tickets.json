@@ -1,0 +1,31 @@
+{
+  "featured": [
+    {
+      "id": "TT-1048",
+      "title": "Internet instável no financeiro",
+      "description": "A conexão do setor financeiro cai desde o início do expediente.",
+      "problem_type": "Problema 1",
+      "status": "In Progress",
+      "criticality": "High",
+      "requester": "Marina Alves",
+      "user_id": "user-1",
+      "daysAgo": 0
+    },
+    {
+      "id": "TT-1047",
+      "title": "Monitor sem sinal após atualização",
+      "description": "O monitor principal ficou sem sinal depois da atualização de ontem.",
+      "problem_type": "Problema 2",
+      "status": "Open",
+      "criticality": "Medium",
+      "requester": "Rafael Lima",
+      "user_id": "user-1",
+      "daysAgo": 0
+    }
+  ],
+  "bands": [
+    { "from": 0, "to": 6, "open": 21, "progress": 30, "closed": 31, "urgent": 5 },
+    { "from": 7, "to": 29, "open": 42, "progress": 67, "closed": 55, "urgent": 12 },
+    { "from": 30, "to": 89, "open": 76, "progress": 112, "closed": 276, "urgent": 23 }
+  ]
+}

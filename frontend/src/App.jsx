@@ -1,0 +1,48 @@
+import { Route, Routes } from "react-router";
+import Register from "./pages/auth/RegisterUser";
+import Home from "./pages/core/Home";
+import Login from "./pages/auth/Login";
+import ForgotPsw from "./pages/auth/ForgotPsw";
+import CreateTicket from "./pages/core/CreateTicket";
+import RegisterManager from "./pages/auth/RegisterManager";
+import RegisterAnalyst from "./pages/auth/RegisterAnalyst";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Profile from "./pages/core/Profile";
+import Analysts from "./pages/core/Analysts";
+import Tickets from "./pages/core/Tickets";
+import Chat from "./pages/core/Chat";
+
+const App = () => {
+  return (
+    <div>
+      <Routes>
+        <Route path="/" element={<Login />} />
+
+        {/* Redirect if already logged in */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
+
+        <Route path="/home" element={<Home />} />
+        <Route path="/tickets" element={<Tickets />} />
+        <Route path="/chat" element={<Chat />} />
+
+        {/* Redirect if already logged in */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/register" element={<Register />} />
+        </Route>
+
+        <Route path="/forgotpsw" element={<ForgotPsw />} />
+        <Route path="/create_ticket" element={<CreateTicket />} />
+        <Route path="/register_manager" element={<RegisterManager />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/analysts" element={<Analysts />} />
+
+        {/* TEMPORÁRIO: cadastro de analista aberto para qualquer usuário logado. Restringir ao gerente depois. */}
+        <Route path="/register_analyst" element={<RegisterAnalyst />} />
+      </Routes>
+    </div>
+  );
+};
+
+export default App;
