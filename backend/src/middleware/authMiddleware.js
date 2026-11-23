@@ -3,13 +3,14 @@ import HttpError from "../model/errorModel.js";
 import User from "../model/userModel.js";
 import Analyst from "../model/analystModel.js";
 import Manager from "../model/managerModel.js";
+import { isTokenRevoked } from "../utils/tokenBlacklist.js";
 
 // middleware para verificar se o usuario esta autenticado
 // e decodificar o user ID e user Name do usuario logado no browser
 // e atribuir o role do usuario logado atualmente
 const allowedRoles = ["manager", "user", "analyst"];
 
-export function authMiddleware(req, res, next) {
+export async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -25,6 +26,19 @@ export function authMiddleware(req, res, next) {
     if (!decoded.id || !allowedRoles.includes(decoded.role)) {
       return next(new HttpError("Invalid authentication token", 401));
     }
+
+    // Check Redis blacklist.
+    const revoked = await isTokenRevoked(token);
+
+    if (revoked) {
+      return next(new HttpError("Token revoked", 401));
+    }
+
+    // Attach authentication data to the request.
+    req.auth = {
+      token,
+      decoded,
+    };
 
     // Store authenticated identity and role
     req.user = {

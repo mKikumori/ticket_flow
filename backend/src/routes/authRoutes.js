@@ -34,6 +34,6 @@ router.post("/login", loginUser);
 router.post("/reset_password", resetPsw);
 router.post("/verify_otp", verifyOtp);
 router.post("/forgot_password", forgotPsw);
-router.post("/logout", logout);
+router.post("/logout", authMiddleware, logout);
 
 export default router;

@@ -10,6 +10,7 @@ import {
   hashSensitiveData,
 } from "../utils/sensitiveData.js";
 import { sendEmail } from "../config/emailSender.js";
+import { revokeToken } from "../utils/tokenBlacklist.js";
 
 // POST /api/auth/register
 export async function registerUser(req, res, next) {
@@ -286,7 +287,11 @@ export async function loginUser(req, res, next) {
 // POST /api/auth/logout
 export async function logout(req, res, next) {
   try {
-    res.status(200).json({
+    const { token, decoded } = req.auth;
+
+    await revokeToken(token, decoded.exp);
+
+    return res.status(200).json({
       message: "Logout successful",
     });
   } catch (error) {
